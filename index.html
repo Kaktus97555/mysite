@@ -5,487 +5,219 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I kurwa archwium</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: #141414;
-            color: #fff;
-            overflow-x: hidden;
-            padding-bottom: 50px;
-        }
-
-        /* Nawigacja (Navbar) */
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 4%;
-            z-index: 1000;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
-            transition: background-color 0.5s;
-        }
-
-        .navbar.scrolled {
-            background-color: #141414;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        .logo {
-            color: #1db954; /* Zmieniono na zielony */
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-decoration: none;
-            text-transform: uppercase;
-        }
-
-        .upload-btn {
-            background-color: #1db954; /* Zmieniono na zielony */
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.2s;
-        }
-
-        .upload-btn:hover {
-            background-color: #179443; /* Ciemniejszy zielony przy najechaniu */
-            transform: scale(1.05);
-        }
-
-        /* Główny Banner (Hero) */
-        .hero {
-            position: relative;
-            height: 75vh;
-            background: linear-gradient(to rgba(0,0,0,0.1), #141414), url('https://images.unsplash.com/photo-1574267431644-4ed38dd814a4?q=80&w=1600') no-repeat center center/cover;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding-left: 4%;
-        }
-
-        .hero-content {
-            max-width: 600px;
-            z-index: 2;
-        }
-
-        .hero-title {
-            font-size: 56px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-        }
-
-        .hero-desc {
-            font-size: 18px;
-            color: #e5e5e5;
-            line-height: 1.4;
-            margin-bottom: 25px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-
-        /* Sekcje filmowe (Rzędy) */
-        .category-row {
-            padding: 30px 4% 0 4%;
-        }
-
-        .category-title {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #e5e5e5;
-        }
-
-        .movie-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .movie-card {
-            background-color: #181818;
-            border-radius: 4px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            aspect-ratio: 16/9;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        .movie-card:hover {
-            transform: scale(1.08);
-            box-shadow: 0px 12px 25px rgba(0,0,0,0.8);
-            z-index: 10;
-        }
-
-        .movie-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .movie-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, rgba(0,0,0,0));
-            padding: 25px 15px 15px 15px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .movie-card:hover .movie-info {
-            opacity: 1;
-        }
-
-        .card-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-
-        .card-desc {
-            font-size: 12px;
-            color: #aaa;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Modale (Okna wyskakujące) */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background-color: #181818;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 500px;
-            padding: 30px;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.7);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 30px;
-            color: #aaa;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .close-modal:hover {
-            color: #fff;
-        }
-
-        .modal h2 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            color: #fff;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
-            color: #aaa;
-        }
-
-        .form-group input, .form-group textarea {
-            width: 100%;
-            background-color: #333;
-            border: 1px solid #444;
-            padding: 12px;
-            color: white;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .form-group input:focus, .form-group textarea:focus {
-            outline: 1px solid #1db954; /* Zmieniono na zielony */
-        }
-
-        .form-group input[type="file"] {
-            background-color: transparent;
-            border: none;
-            padding: 5px 0;
-            cursor: pointer;
-        }
-
-        .submit-btn {
-            width: 100%;
-            background-color: #1db954; /* Zmieniono na zielony */
-            color: white;
-            border: none;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.2s;
-        }
-
-        .submit-btn:hover {
-            background-color: #179443; /* Ciemniejszy zielony przy najechaniu */
-        }
-
-        /* Odtwarzacz Wideo (Modal) */
-        .player-modal .modal-content {
-            max-width: 900px;
-            padding: 0;
-            background-color: #000;
-            overflow: hidden;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        body { background-color: #141414; color: #fff; overflow-x: hidden; padding-bottom: 50px; }
         
-        .player-modal video {
-            width: 100%;
-            display: block;
-            aspect-ratio: 16/9;
-        }
+        /* Nawigacja */
+        .navbar { position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 20px 4%; z-index: 1000; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); transition: background-color 0.5s; }
+        .navbar.scrolled { background-color: #141414; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .logo { color: #1db954; font-size: 28px; font-weight: bold; text-decoration: none; text-transform: uppercase; }
         
-        .player-info {
-            padding: 25px;
-            background-color: #181818;
-        }
+        /* Główny Banner */
+        .hero { position: relative; height: 60vh; background: linear-gradient(to rgba(0,0,0,0.3), #141414), url('https://images.unsplash.com/photo-1574267431644-4ed38dd814a4?q=80&w=1600') no-repeat center center/cover; display: flex; flex-direction: column; justify-content: center; padding-left: 4%; }
+        .hero-title { font-size: 56px; font-weight: bold; margin-bottom: 15px; }
+        .hero-desc { font-size: 18px; color: #e5e5e5; max-width: 600px; line-height: 1.4; }
 
-        .player-info h3 {
-            font-size: 22px;
-            margin-bottom: 8px;
-        }
+        /* Sekcja Dysku */
+        .category-row { padding: 30px 4% 0 4%; }
+        .category-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .category-title { font-size: 24px; font-weight: bold; color: #e5e5e5; }
+        
+        /* Przycisk Wróć */
+        .back-btn { background-color: #333; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; transition: 0.2s; }
+        .back-btn:hover { background-color: #555; }
 
-        .player-info p {
-            color: #aaa;
-            font-size: 14px;
-            line-height: 1.5;
-        }
+        /* Siatka plików */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .movie-card { background-color: #181818; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; position: relative; aspect-ratio: 16/9; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #333; }
+        .movie-card:hover { transform: scale(1.05); box-shadow: 0px 8px 20px rgba(29, 185, 84, 0.4); z-index: 10; border-color: #1db954; }
+        
+        .movie-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: opacity 0.3s; }
+        .movie-card:hover img { opacity: 1; }
+        
+        .folder-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #222; font-size: 60px; color: #1db954; }
+
+        .movie-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 50%, rgba(0,0,0,0)); padding: 20px 15px 10px 15px; }
+        .card-title { font-size: 16px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+        
+        /* Ładowanie */
+        .loader { font-size: 18px; color: #aaa; padding: 20px 0; }
+
+        /* Odtwarzacz */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { width: 90%; max-width: 1000px; position: relative; background: #000; border-radius: 8px; overflow: hidden; }
+        .close-modal { position: absolute; top: 10px; right: 20px; font-size: 35px; color: #fff; cursor: pointer; z-index: 10; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .close-modal:hover { color: #1db954; }
+        
+        /* Iframe odtwarzacza Google Drive */
+        iframe { width: 100%; aspect-ratio: 16/9; border: none; }
+        
+        .player-info { padding: 20px; background-color: #181818; }
+        .player-info h3 { font-size: 22px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <a href="#" class="logo">I KURWA ARCHWIUM</a>
-        <button class="upload-btn" onclick="openUploadModal()">+ Dodaj Film</button>
+        <a href="#" class="logo">I KURWA ARCHIWUM</a>
     </nav>
 
     <header class="hero">
         <div class="hero-content">
-            <h1 class="hero-title">Witaj w I kurwa archwium</h1>
-            <p class="hero-desc">To jest Twoje spersonalizowane archiwum. Kliknij przycisk powyżej, aby przesłać własny plik wideo z komputera i natychmiast dodać go do biblioteki.</p>
+            <h1 class="hero-title">Twoje Prywatne Archiwum</h1>
+            <p class="hero-desc">Przeglądaj swoje seriale i filmy prosto z Dysku Google. Kliknij w folder, aby wybrać sezon, a następnie odcinek.</p>
         </div>
     </header>
 
-    <section class="category-row" id="user-movies-row" style="display: none;">
-        <h2 class="category-title">Twoje wgrane filmy</h2>
-        <div class="movie-grid" id="user-movies-grid"></div>
-    </section>
-
     <section class="category-row">
-        <h2 class="category-title">Popularne teraz (Przykłady)</h2>
-        <div class="movie-grid" id="popular-movies-grid"></div>
+        <div class="category-header">
+            <button class="back-btn" id="backBtn" onclick="goBack()">&#8592; Wróć</button>
+            <h2 class="category-title" id="currentFolderName">Biblioteka Główna</h2>
+        </div>
+        <div class="movie-grid" id="drive-gallery">
+            <div class="loader">Łączenie z Dyskiem Google...</div>
+        </div>
     </section>
 
-    <div class="modal" id="uploadModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeUploadModal()">&times;</span>
-            <h2>Dodaj nowy film</h2>
-            <form id="uploadForm" onsubmit="handleUpload(event)">
-                <div class="form-group">
-                    <label for="movieTitle">Tytuł filmu</label>
-                    <input type="text" id="movieTitle" placeholder="Np. Moje Wakacje 2026" required>
-                </div>
-                <div class="form-group">
-                    <label for="movieDesc">Opis filmu</label>
-                    <textarea id="movieDesc" rows="3" placeholder="Krótki opis fabuły lub wideo..." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="videoFile">Plik Wideo (MP4 / WebM)</label>
-                    <input type="file" id="videoFile" accept="video/*" required>
-                </div>
-                <div class="form-group">
-                    <label for="thumbFile">Okładka / Miniaturka (Opcjonalnie)</label>
-                    <input type="file" id="thumbFile" accept="image/*">
-                </div>
-                <button type="submit" class="submit-btn">Dodaj do biblioteki</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="modal player-modal" id="playerModal">
+    <div class="modal" id="playerModal">
         <div class="modal-content">
             <span class="close-modal" onclick="closePlayerModal()">&times;</span>
-            <video id="videoPlayer" controls></video>
+            <iframe id="videoPlayer" allowfullscreen></iframe>
             <div class="player-info">
-                <h3 id="playerTitle">Tytuł Filmu</h3>
-                <p id="playerDesc">Opis filmu...</p>
+                <h3 id="playerTitle">Tytuł</h3>
             </div>
         </div>
     </div>
 
     <script>
-        // Efekt zmiany tła paska nawigacji przy skrolowaniu
+        // Efekt paska nawigacji
         window.addEventListener('scroll', () => {
             const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+            if (window.scrollY > 50) navbar.classList.add('scrolled');
+            else navbar.classList.remove('scrolled');
         });
 
-        // Baza przykładowych filmów z publicznych serwerów testowych
-        const defaultMovies = [
-            {
-                title: "Big Buck Bunny",
-                desc: "Klasyczna animacja o dużym, puszystym króliku, który postanawia zemścić się na złośliwych leśnych wiewiórkach.",
-                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                thumbUrl: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=500"
-            },
-            {
-                title: "Sintel",
-                desc: "Poruszająca i epicka historia młodej dziewczyny, która przemierza świat w poszukiwaniu swojego porwanego smoka.",
-                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-                thumbUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=500"
-            },
-            {
-                title: "Tears of Steel",
-                desc: "Efektowny film krótkometrażowy osadzony w dystopijnej, alternatywnej przyszłości w sercu Amsterdamu.",
-                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-                thumbUrl: "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=500"
-            }
-        ];
+        // Historia nawigacji (żeby móc wracać do poprzednich folderów)
+        let folderHistory = []; 
 
-        // Lista filmów przesłanych przez użytkownika w trakcie tej sesji
-        let userMovies = [];
-
-        // Funkcja renderująca zawartość strony
-        function renderMovies() {
-            const userGrid = document.getElementById('user-movies-grid');
-            const userRow = document.getElementById('user-movies-row');
-            const popularGrid = document.getElementById('popular-movies-grid');
+        // Główna funkcja ładująca foldery/pliki z Dysku
+        async function loadFiles(folderId = null, folderName = 'Biblioteka Główna') {
+            const gallery = document.getElementById('drive-gallery');
+            const backBtn = document.getElementById('backBtn');
+            const titleEl = document.getElementById('currentFolderName');
             
-            // Renderowanie filmów przykładowych
-            popularGrid.innerHTML = defaultMovies.map(movie => `
-                <div class="movie-card" onclick="playMovie('${movie.videoUrl}', \`${movie.title}\`, \`${movie.desc}\`)">
-                    <img src="${movie.thumbUrl}" alt="${movie.title}">
-                    <div class="movie-info">
-                        <div class="card-title">${movie.title}</div>
-                        <div class="card-desc">${movie.desc}</div>
-                    </div>
-                </div>
-            `).join('');
+            gallery.innerHTML = '<div class="loader">Ładowanie zawartości...</div>';
+            titleEl.innerText = folderName;
 
-            // Renderowanie filmów wgranych przez użytkownika
-            if (userMovies.length === 0) {
-                userRow.style.display = 'none';
+            // Pokaż/ukryj przycisk "Wróć" w zależności od tego, czy jesteśmy w podfolderze
+            if (folderHistory.length > 0) {
+                backBtn.style.display = 'block';
             } else {
-                userRow.style.display = 'block';
-                userGrid.innerHTML = userMovies.map(movie => `
-                    <div class="movie-card" onclick="playMovie('${movie.videoUrl}', \`${movie.title}\`, \`${movie.desc}\`)">
-                        <img src="${movie.thumbUrl}" alt="${movie.title}">
-                        <div class="movie-info">
-                            <div class="card-title">${movie.title}</div>
-                            <div class="card-desc">${movie.desc}</div>
-                        </div>
-                    </div>
-                `).join('');
+                backBtn.style.display = 'none';
+            }
+
+            try {
+                // Budowanie adresu zapytania
+                let url = '/.netlify/functions/getFiles';
+                if (folderId) {
+                    url += `?folderId=${folderId}`;
+                }
+
+                const response = await fetch(url);
+                const files = await response.json();
+
+                gallery.innerHTML = ''; 
+
+                if (files.error) {
+                    gallery.innerHTML = `<div class="loader" style="color:red;">Błąd dostępu do Dysku: ${files.error}</div>`;
+                    return;
+                }
+
+                if (!files || files.length === 0) {
+                    gallery.innerHTML = '<div class="loader">Ten folder jest pusty.</div>';
+                    return;
+                }
+
+                files.forEach(file => {
+                    // Sprawdzamy czy element jest folderem z Google Drive
+                    const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'movie-card';
+
+                    if (isFolder) {
+                        // Karta Folderu (Serial / Sezon)
+                        card.innerHTML = `
+                            <div class="folder-icon">📁</div>
+                            <div class="movie-info">
+                                <div class="card-title">${file.name}</div>
+                            </div>
+                        `;
+                        // Po kliknięciu w folder wejdź do niego
+                        card.onclick = () => {
+                            folderHistory.push({ id: folderId, name: folderName });
+                            loadFiles(file.id, file.name);
+                        };
+                    } else {
+                        // Karta Pliku (Odcinek / Film)
+                        // Zamieniamy link '/view' na '/preview', aby zadziałał w odtwarzaczu na stronie
+                        const embedLink = file.webViewLink ? file.webViewLink.replace('/view?usp=drivesdk', '/preview') : '';
+                        const thumb = file.thumbnailLink ? file.thumbnailLink : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500';
+
+                        card.innerHTML = `
+                            <img src="${thumb}" alt="Miniaturka">
+                            <div class="movie-info">
+                                <div class="card-title">${file.name.replace(/\.[^/.]+$/, "")}</div>
+                            </div>
+                        `;
+                        card.onclick = () => playMovie(embedLink, file.name);
+                    }
+                    
+                    gallery.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Błąd:', error);
+                gallery.innerHTML = '<div class="loader" style="color:red;">Błąd podczas łączenia z serwerem Netlify.</div>';
             }
         }
 
-        // Modale: Otwieranie/Zamykanie formularza dodawania filmu
-        function openUploadModal() {
-            document.getElementById('uploadModal').style.display = 'flex';
-        }
-        function closeUploadModal() {
-            document.getElementById('uploadModal').style.display = 'none';
-            document.getElementById('uploadForm').reset();
-        }
-
-        // Obsługa przesyłania pliku (Tworzenie tymczasowych adresów Blob URL)
-        function handleUpload(event) {
-            event.preventDefault();
-            
-            const title = document.getElementById('movieTitle').value;
-            const desc = document.getElementById('movieDesc').value;
-            const videoFile = document.getElementById('videoFile').files[0];
-            const thumbFile = document.getElementById('thumbFile').files[0];
-
-            if (!videoFile) return;
-
-            // Tworzenie lokalnego URL do pliku wideo
-            const videoUrl = URL.createObjectURL(videoFile);
-            
-            // Domyślna okładka, jeśli użytkownik nie dodał grafiki
-            let thumbUrl = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500'; 
-            
-            if (thumbFile) {
-                thumbUrl = URL.createObjectURL(thumbFile);
+        // Funkcja do przycisku "Wróć"
+        function goBack() {
+            if (folderHistory.length > 0) {
+                const previousFolder = folderHistory.pop();
+                loadFiles(previousFolder.id, previousFolder.name);
             }
-
-            // Dodanie nowego filmu na początek listy użytkownika
-            userMovies.unshift({ title, desc, videoUrl, thumbUrl });
-            
-            renderMovies();
-            closeUploadModal();
         }
 
-        // Odtwarzacz: Uruchomienie filmu w modalu
-        function playMovie(url, title, desc) {
-            const playerModal = document.getElementById('playerModal');
-            const videoPlayer = document.getElementById('videoPlayer');
+        // Odtwarzacz
+        function playMovie(url, title) {
+            const modal = document.getElementById('playerModal');
+            const iframe = document.getElementById('videoPlayer');
             const playerTitle = document.getElementById('playerTitle');
-            const playerDesc = document.getElementById('playerDesc');
             
-            videoPlayer.src = url;
-            playerTitle.innerText = title;
-            playerDesc.innerText = desc;
-            
-            playerModal.style.display = 'flex';
-            videoPlayer.play();
+            iframe.src = url;
+            playerTitle.innerText = title.replace(/\.[^/.]+$/, ""); // Usuwa rozszerzenie np. .mp4 z tytułu
+            modal.style.display = 'flex';
         }
 
-        // Odtwarzacz: Zamknięcie i zatrzymanie wideo
         function closePlayerModal() {
-            const playerModal = document.getElementById('playerModal');
-            const videoPlayer = document.getElementById('videoPlayer');
-            videoPlayer.pause();
-            videoPlayer.src = '';
-            playerModal.style.display = 'none';
+            const modal = document.getElementById('playerModal');
+            const iframe = document.getElementById('videoPlayer');
+            iframe.src = ''; // Zatrzymuje odtwarzanie po zamknięciu
+            modal.style.display = 'none';
         }
 
-        // Wywołanie renderowania przy starcie strony
-        renderMovies();
+        // Zamknij modal po kliknięciu w tło
+        window.onclick = function(event) {
+            const modal = document.getElementById('playerModal');
+            if (event.target == modal) {
+                closePlayerModal();
+            }
+        }
+
+        // Uruchom ładowanie głównego folderu przy starcie
+        loadFiles();
     </script>
 </body>
 </html>
