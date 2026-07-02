@@ -1,24 +1,25 @@
-// netlify/functions/getFiles.js
 const { google } = require('googleapis');
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   try {
-    // Autoryzacja za pomocą zmiennych z Netlify
     const auth = new google.auth.JWT(
       process.env.GOOGLE_CLIENT_EMAIL,
       null,
-      // Obsługa ewentualnych problemów z formatowaniem klucza w Netlify
-      process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'), 
+      process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
       ['https://www.googleapis.com/auth/drive.readonly']
     );
 
     const drive = google.drive({ version: 'v3', auth });
 
-    // Pobranie listy plików z Twojego folderu
+    // Pobieramy ID folderu z zapytania strony. Jeśli go nie ma, używamy głównego z ustawień Netlify.
+    const folderId = event.queryStringParameters.folderId || process.env.DRIVE_FOLDER_ID;
+
+    // Pobieramy pliki ORAZ foldery
     const response = await drive.files.list({
-      q: `'${process.env.DRIVE_FOLDER_ID}' in parents and trashed=false`,
-      fields: 'files(id, name, webViewLink, iconLink)', // To chcemy wyciągnąć
-      orderBy: 'createdTime desc' // Sortowanie od najnowszych
+      q: `'${folderId}' in parents and trashed=false`,
+      // Pobieramy format pliku (mimeType), miniaturkę i linki
+      fields: 'files(id, name, mimeType, webViewLink, thumbnailLink)', 
+      orderBy: 'folder, name' // Najpierw foldery, potem pliki, alfabetycznie
     });
 
     return {
