@@ -5,12 +5,14 @@ exports.handler = async (event) => {
     if (!process.env.GOOGLE_CLIENT_EMAIL) throw new Error("Brak zmiennej GOOGLE_CLIENT_EMAIL.");
     if (!process.env.GOOGLE_PRIVATE_KEY) throw new Error("Brak zmiennej GOOGLE_PRIVATE_KEY.");
     
-    // Pobieramy ID
-    const folderId = (event.queryStringParameters && event.queryStringParameters.folderId) ? event.queryStringParameters.folderId : process.env.DRIVE_FOLDER_ID;
+    let folderId = (event.queryStringParameters && event.queryStringParameters.folderId) ? event.queryStringParameters.folderId : process.env.DRIVE_FOLDER_ID;
 
     if (!folderId || folderId.trim() === "") {
         throw new Error("ID folderu jest puste! Sprawdź zmienną DRIVE_FOLDER_ID w Netlify.");
     }
+
+    if (folderId.includes('?')) folderId = folderId.split('?')[0];
+    folderId = folderId.trim();
 
     const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
     const auth = new google.auth.JWT(
@@ -23,10 +25,10 @@ exports.handler = async (event) => {
     const drive = google.drive({ version: 'v3', auth });
 
     try {
-        // Próbujemy pobrać pliki (dodane wsparcie dla dysków współdzielonych)
         const response = await drive.files.list({
-          q: `'${folderId.trim()}' in parents and trashed=false`,
-          fields: 'files(id, name, mimeType, webViewLink, thumbnailLink)', 
+          q: `'${folderId}' in parents and trashed=false`,
+          // DODANO TUTAJ 'description' ABY SERWER POBIERAŁ OPIS FOLDERU:
+          fields: 'files(id, name, mimeType, webViewLink, thumbnailLink, description)', 
           orderBy: 'folder, name',
           supportsAllDrives: true,
           includeItemsFromAllDrives: true
@@ -39,8 +41,7 @@ exports.handler = async (event) => {
         };
         
     } catch (apiError) {
-        // Jeśli Google wyrzuci błąd, pokażemy dokładnie, jakie ID zostało do niego wysłane
-        throw new Error(`Google nie widzi folderu. Szukane ID to: [${folderId}]. Upewnij się, że jest poprawne!`);
+        throw new Error(`Google nie widzi folderu. Szukane ID to: [${folderId}].`);
     }
 
   } catch (error) {
