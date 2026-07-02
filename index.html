@@ -12,13 +12,13 @@
         .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 4%; z-index: 1000; background-color: #1db954; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .logo { color: #ffffff; font-size: 26px; font-weight: bold; letter-spacing: 1px; text-decoration: none; text-transform: uppercase; cursor: pointer; }
 
-        /* Główny Banner (Hero) - ZMNIEJSZONO WYSOKOŚĆ Z 50vh DO 35vh */
+        /* Główny Banner (Hero) */
         .hero { position: relative; height: 35vh; background: linear-gradient(to rgba(0,0,0,0.4), #141414), url('https://images.unsplash.com/photo-1574267431644-4ed38dd814a4?q=80&w=1600') no-repeat center center/cover; display: flex; flex-direction: column; justify-content: center; padding-left: 4%; }
         .hero-content { max-width: 600px; z-index: 2; }
         .hero-title { font-size: 48px; font-weight: bold; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); }
         .hero-desc { font-size: 18px; color: #e5e5e5; line-height: 1.4; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
 
-        /* Sekcje filmowe (Rzędy) - ZMNIEJSZONO GÓRNY ODSTĘP Z 30px DO 10px */
+        /* Sekcje filmowe (Rzędy) */
         .category-row { padding: 10px 4% 0 4%; }
         .category-header { display: flex; align-items: center; gap: 20px; margin-bottom: 15px; }
         .category-title { font-size: 22px; font-weight: bold; color: #e5e5e5; }
@@ -43,4 +43,158 @@
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background-color: #181818; border-radius: 8px; width: 100%; max-width: 500px; padding: 30px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.7); }
-        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 30px; color: #
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 30px; color: #aaa; cursor: pointer; transition: 0.2s; z-index: 50; }
+        .close-modal:hover { color: #1db954; }
+        
+        .player-modal .modal-content { max-width: 900px; padding: 0; background-color: #000; overflow: hidden; }
+        .player-modal iframe { width: 100%; display: block; aspect-ratio: 16/9; border: none; }
+        .player-info { padding: 20px; background-color: #181818; }
+        .player-info h3 { font-size: 20px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="#" class="logo" onclick="resetToRoot(event)">I KURWA ARCHIWUM</a>
+        </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Twoje Prywatne Archiwum</h1>
+            <p class="hero-desc">Kliknij w folder, aby wybrać sezon, a następnie odcinek prosto z Google Drive.</p>
+        </div>
+    </header>
+
+    <section class="category-row">
+        <div class="category-header">
+            <button class="back-btn" id="backBtn" onclick="goBack()">&#8592; Wróć</button>
+            <h2 class="category-title" id="currentFolderName">Biblioteka Główna</h2>
+        </div>
+        <div class="movie-grid" id="drive-gallery">
+            <div class="loader">Łączenie z serwerem...</div>
+        </div>
+    </section>
+
+    <div class="modal player-modal" id="playerModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closePlayerModal()">&times;</span>
+            <iframe id="videoPlayer" allowfullscreen></iframe>
+            <div class="player-info">
+                <h3 id="playerTitle">Tytuł Filmu</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let folderHistory = []; 
+
+        async function loadFiles(folderId = null, folderName = 'Biblioteka Główna') {
+            const gallery = document.getElementById('drive-gallery');
+            const backBtn = document.getElementById('backBtn');
+            const titleEl = document.getElementById('currentFolderName');
+            
+            gallery.innerHTML = '<div class="loader">Trwa pobieranie danych...</div>';
+            titleEl.innerText = folderName;
+            backBtn.style.display = folderHistory.length > 0 ? 'block' : 'none';
+
+            try {
+                let url = '/.netlify/functions/getFiles';
+                if (folderId) url += `?folderId=${folderId}`;
+
+                const response = await fetch(url);
+                
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">BŁĄD KRYTYCZNY: Serwer nie odpowiada poprawnie.</div>`;
+                    return;
+                }
+
+                const files = await response.json();
+
+                if (files.error) {
+                    gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd API Google: ${files.error}</div>`;
+                    return;
+                }
+
+                if (!files || files.length === 0) {
+                    gallery.innerHTML = '<div class="loader">Ten folder jest pusty.</div>';
+                    return;
+                }
+
+                gallery.innerHTML = ''; 
+                files.forEach(file => {
+                    const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
+                    const card = document.createElement('div');
+                    card.className = 'movie-card';
+
+                    if (isFolder) {
+                        let folderVisual = `<div class="folder-icon">📁</div>`;
+                        
+                        // Wykrywanie miniaturki dla folderu (link z opisu na Dysku Google)
+                        if (file.description && file.description.trim().startsWith('http')) {
+                            folderVisual = `<img src="${file.description.trim()}" alt="${file.name}">`;
+                        }
+
+                        card.innerHTML = `
+                            ${folderVisual}
+                            <div class="movie-info">
+                                <div class="card-title">${file.name}</div>
+                                <div class="card-desc">Folder</div>
+                            </div>
+                        `;
+                        card.onclick = () => {
+                            folderHistory.push({ id: folderId, name: folderName });
+                            loadFiles(file.id, file.name);
+                        };
+                    } else {
+                        const embedLink = file.webViewLink ? file.webViewLink.replace('/view?usp=drivesdk', '/preview') : '';
+                        const thumb = file.thumbnailLink ? file.thumbnailLink.replace('=s220', '=s600') : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500';
+                        const cleanName = file.name.replace(/\.[^/.]+$/, "");
+
+                        card.innerHTML = `
+                            <img src="${thumb}" alt="${cleanName}">
+                            <div class="movie-info">
+                                <div class="card-title">${cleanName}</div>
+                                <div class="card-desc">Odtwórz</div>
+                            </div>
+                        `;
+                        card.onclick = () => playMovie(embedLink, cleanName);
+                    }
+                    gallery.appendChild(card);
+                });
+            } catch (error) {
+                gallery.innerHTML = '<div class="loader" style="color:#e74c3c;">Brak połączenia z siecią.</div>';
+            }
+        }
+
+        // RESET DO STRONY GŁÓWNEJ (po kliknięciu w logo)
+        function resetToRoot(event) {
+            if (event) event.preventDefault();
+            folderHistory = [];
+            loadFiles(null, 'Biblioteka Główna');
+        }
+
+        function goBack() {
+            if (folderHistory.length > 0) {
+                const previousFolder = folderHistory.pop();
+                loadFiles(previousFolder.id, previousFolder.name);
+            }
+        }
+
+        function playMovie(url, title) {
+            const modal = document.getElementById('playerModal');
+            document.getElementById('videoPlayer').src = url;
+            document.getElementById('playerTitle').innerText = title;
+            modal.style.display = 'flex';
+        }
+
+        function closePlayerModal() {
+            document.getElementById('playerModal').style.display = 'none';
+            document.getElementById('videoPlayer').src = ''; 
+        }
+
+        // Uruchom ładowanie po włączeniu strony
+        loadFiles();
+    </script>
+</body>
+</html>
