@@ -6,66 +6,67 @@
     <title>I kurwa archwium</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-        body { background-color: #141414; color: #fff; overflow-x: hidden; padding-bottom: 50px; }
-        
-        /* Nawigacja */
-        .navbar { position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 20px 4%; z-index: 1000; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); transition: background-color 0.5s; }
-        .navbar.scrolled { background-color: #141414; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .logo { color: #1db954; font-size: 28px; font-weight: bold; text-decoration: none; text-transform: uppercase; }
-        
-        /* Główny Banner */
-        .hero { position: relative; height: 60vh; background: linear-gradient(to rgba(0,0,0,0.3), #141414), url('https://images.unsplash.com/photo-1574267431644-4ed38dd814a4?q=80&w=1600') no-repeat center center/cover; display: flex; flex-direction: column; justify-content: center; padding-left: 4%; }
-        .hero-title { font-size: 56px; font-weight: bold; margin-bottom: 15px; }
-        .hero-desc { font-size: 18px; color: #e5e5e5; max-width: 600px; line-height: 1.4; }
+        body { background-color: #141414; color: #fff; overflow-x: hidden; padding-bottom: 50px; padding-top: 70px; /* Miejsce na przypięty pasek */ }
 
-        /* Sekcja Dysku */
+        /* ZIELONY PASEK NAWIGACJI */
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 4%; z-index: 1000; background-color: #1db954; /* Zielony kolor */ box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .logo { color: #ffffff; /* Biały tekst */ font-size: 26px; font-weight: bold; letter-spacing: 1px; text-decoration: none; text-transform: uppercase; }
+        .upload-btn { background-color: #141414; color: white; border: 1px solid white; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .upload-btn:hover { background-color: #333; }
+
+        /* Główny Banner (Hero) */
+        .hero { position: relative; height: 50vh; background: linear-gradient(to rgba(0,0,0,0.4), #141414), url('https://images.unsplash.com/photo-1574267431644-4ed38dd814a4?q=80&w=1600') no-repeat center center/cover; display: flex; flex-direction: column; justify-content: center; padding-left: 4%; }
+        .hero-content { max-width: 600px; z-index: 2; }
+        .hero-title { font-size: 48px; font-weight: bold; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); }
+        .hero-desc { font-size: 18px; color: #e5e5e5; line-height: 1.4; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+
+        /* Sekcje filmowe (Rzędy) */
         .category-row { padding: 30px 4% 0 4%; }
         .category-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-        .category-title { font-size: 24px; font-weight: bold; color: #e5e5e5; }
+        .category-title { font-size: 22px; font-weight: bold; color: #e5e5e5; }
         
-        /* Przycisk Wróć */
-        .back-btn { background-color: #333; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; transition: 0.2s; }
-        .back-btn:hover { background-color: #555; }
+        .back-btn { background-color: #333; color: white; border: 1px solid #555; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; transition: 0.2s; font-size: 14px; }
+        .back-btn:hover { background-color: #1db954; border-color: #1db954; }
 
-        /* Siatka plików */
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-        .movie-card { background-color: #181818; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; position: relative; aspect-ratio: 16/9; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #333; }
-        .movie-card:hover { transform: scale(1.05); box-shadow: 0px 8px 20px rgba(29, 185, 84, 0.4); z-index: 10; border-color: #1db954; }
-        
-        .movie-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: opacity 0.3s; }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .movie-card { background-color: #181818; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; aspect-ratio: 16/9; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid transparent; }
+        .movie-card:hover { transform: scale(1.05); box-shadow: 0px 8px 20px rgba(29, 185, 84, 0.3); z-index: 10; border-color: #1db954; }
+        .movie-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s; }
         .movie-card:hover img { opacity: 1; }
         
-        .folder-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #222; font-size: 60px; color: #1db954; }
+        .folder-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #222; font-size: 60px; color: #1db954; transition: 0.3s; }
+        .movie-card:hover .folder-icon { background: #2a2a2a; transform: scale(1.1); }
 
-        .movie-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 50%, rgba(0,0,0,0)); padding: 20px 15px 10px 15px; }
-        .card-title { font-size: 16px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-        
-        /* Ładowanie */
-        .loader { font-size: 18px; color: #aaa; padding: 20px 0; }
+        .movie-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, rgba(0,0,0,0)); padding: 25px 15px 15px 15px; }
+        .card-title { font-size: 15px; font-weight: bold; margin-bottom: 4px; text-shadow: 1px 1px 3px black; }
+        .card-desc { font-size: 12px; color: #aaa; }
 
-        /* Odtwarzacz */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { width: 90%; max-width: 1000px; position: relative; background: #000; border-radius: 8px; overflow: hidden; }
-        .close-modal { position: absolute; top: 10px; right: 20px; font-size: 35px; color: #fff; cursor: pointer; z-index: 10; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .loader { font-size: 16px; color: #aaa; padding: 20px 0; font-family: monospace; }
+
+        /* Modale (Okna wyskakujące) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background-color: #181818; border-radius: 8px; width: 100%; max-width: 500px; padding: 30px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.7); }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 30px; color: #aaa; cursor: pointer; transition: 0.2s; z-index: 50; }
         .close-modal:hover { color: #1db954; }
         
-        /* Iframe odtwarzacza Google Drive */
-        iframe { width: 100%; aspect-ratio: 16/9; border: none; }
-        
+        /* Odtwarzacz Wideo (Modal) */
+        .player-modal .modal-content { max-width: 900px; padding: 0; background-color: #000; overflow: hidden; }
+        .player-modal iframe { width: 100%; display: block; aspect-ratio: 16/9; border: none; }
         .player-info { padding: 20px; background-color: #181818; }
-        .player-info h3 { font-size: 22px; margin-bottom: 5px; }
+        .player-info h3 { font-size: 20px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <a href="#" class="logo">I KURWA ARCHIWUM</a>
+        <button class="upload-btn" onclick="alert('Moduł uploadu w przygotowaniu!')">+ Dodaj Film</button>
     </nav>
 
     <header class="hero">
         <div class="hero-content">
             <h1 class="hero-title">Twoje Prywatne Archiwum</h1>
-            <p class="hero-desc">Przeglądaj swoje seriale i filmy prosto z Dysku Google. Kliknij w folder, aby wybrać sezon, a następnie odcinek.</p>
+            <p class="hero-desc">Kliknij w folder, aby wybrać sezon, a następnie odcinek prosto z Google Drive.</p>
         </div>
     </header>
 
@@ -75,61 +76,50 @@
             <h2 class="category-title" id="currentFolderName">Biblioteka Główna</h2>
         </div>
         <div class="movie-grid" id="drive-gallery">
-            <div class="loader">Łączenie z Dyskiem Google...</div>
+            <div class="loader">Łączenie z serwerem...</div>
         </div>
     </section>
 
-    <div class="modal" id="playerModal">
+    <div class="modal player-modal" id="playerModal">
         <div class="modal-content">
             <span class="close-modal" onclick="closePlayerModal()">&times;</span>
             <iframe id="videoPlayer" allowfullscreen></iframe>
             <div class="player-info">
-                <h3 id="playerTitle">Tytuł</h3>
+                <h3 id="playerTitle">Tytuł Filmu</h3>
             </div>
         </div>
     </div>
 
     <script>
-        // Efekt paska nawigacji
-        window.addEventListener('scroll', () => {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 50) navbar.classList.add('scrolled');
-            else navbar.classList.remove('scrolled');
-        });
-
-        // Historia nawigacji (żeby móc wracać do poprzednich folderów)
         let folderHistory = []; 
 
-        // Główna funkcja ładująca foldery/pliki z Dysku
         async function loadFiles(folderId = null, folderName = 'Biblioteka Główna') {
             const gallery = document.getElementById('drive-gallery');
             const backBtn = document.getElementById('backBtn');
             const titleEl = document.getElementById('currentFolderName');
             
-            gallery.innerHTML = '<div class="loader">Ładowanie zawartości...</div>';
+            gallery.innerHTML = '<div class="loader">Trwa pobieranie danych...</div>';
             titleEl.innerText = folderName;
-
-            // Pokaż/ukryj przycisk "Wróć" w zależności od tego, czy jesteśmy w podfolderze
-            if (folderHistory.length > 0) {
-                backBtn.style.display = 'block';
-            } else {
-                backBtn.style.display = 'none';
-            }
+            backBtn.style.display = folderHistory.length > 0 ? 'block' : 'none';
 
             try {
-                // Budowanie adresu zapytania
                 let url = '/.netlify/functions/getFiles';
-                if (folderId) {
-                    url += `?folderId=${folderId}`;
-                }
+                if (folderId) url += `?folderId=${folderId}`;
 
                 const response = await fetch(url);
+                
+                // Nowy system sprawdzania błędów
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    console.error("Funkcja zwróciła zły format danych (prawdopodobnie padła)");
+                    gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">BŁĄD KRYTYCZNY: Serwer nie odpowiada poprawnie. Otwórz konsolę (F12) by pomóc w diagnozie.</div>`;
+                    return;
+                }
+
                 const files = await response.json();
 
-                gallery.innerHTML = ''; 
-
                 if (files.error) {
-                    gallery.innerHTML = `<div class="loader" style="color:red;">Błąd dostępu do Dysku: ${files.error}</div>`;
+                    gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd API Google: ${files.error}</div>`;
                     return;
                 }
 
@@ -138,51 +128,46 @@
                     return;
                 }
 
+                gallery.innerHTML = ''; 
                 files.forEach(file => {
-                    // Sprawdzamy czy element jest folderem z Google Drive
                     const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
-                    
                     const card = document.createElement('div');
                     card.className = 'movie-card';
 
                     if (isFolder) {
-                        // Karta Folderu (Serial / Sezon)
                         card.innerHTML = `
                             <div class="folder-icon">📁</div>
                             <div class="movie-info">
                                 <div class="card-title">${file.name}</div>
+                                <div class="card-desc">Folder</div>
                             </div>
                         `;
-                        // Po kliknięciu w folder wejdź do niego
                         card.onclick = () => {
                             folderHistory.push({ id: folderId, name: folderName });
                             loadFiles(file.id, file.name);
                         };
                     } else {
-                        // Karta Pliku (Odcinek / Film)
-                        // Zamieniamy link '/view' na '/preview', aby zadziałał w odtwarzaczu na stronie
                         const embedLink = file.webViewLink ? file.webViewLink.replace('/view?usp=drivesdk', '/preview') : '';
-                        const thumb = file.thumbnailLink ? file.thumbnailLink : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500';
+                        const thumb = file.thumbnailLink ? file.thumbnailLink.replace('=s220', '=s600') : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500';
+                        const cleanName = file.name.replace(/\.[^/.]+$/, "");
 
                         card.innerHTML = `
-                            <img src="${thumb}" alt="Miniaturka">
+                            <img src="${thumb}" alt="${cleanName}">
                             <div class="movie-info">
-                                <div class="card-title">${file.name.replace(/\.[^/.]+$/, "")}</div>
+                                <div class="card-title">${cleanName}</div>
+                                <div class="card-desc">Odtwórz</div>
                             </div>
                         `;
-                        card.onclick = () => playMovie(embedLink, file.name);
+                        card.onclick = () => playMovie(embedLink, cleanName);
                     }
-                    
                     gallery.appendChild(card);
                 });
-
             } catch (error) {
-                console.error('Błąd:', error);
-                gallery.innerHTML = '<div class="loader" style="color:red;">Błąd podczas łączenia z serwerem Netlify.</div>';
+                console.error("Błąd sieci:", error);
+                gallery.innerHTML = '<div class="loader" style="color:#e74c3c;">Brak połączenia z siecią.</div>';
             }
         }
 
-        // Funkcja do przycisku "Wróć"
         function goBack() {
             if (folderHistory.length > 0) {
                 const previousFolder = folderHistory.pop();
@@ -190,33 +175,18 @@
             }
         }
 
-        // Odtwarzacz
         function playMovie(url, title) {
             const modal = document.getElementById('playerModal');
-            const iframe = document.getElementById('videoPlayer');
-            const playerTitle = document.getElementById('playerTitle');
-            
-            iframe.src = url;
-            playerTitle.innerText = title.replace(/\.[^/.]+$/, ""); // Usuwa rozszerzenie np. .mp4 z tytułu
+            document.getElementById('videoPlayer').src = url;
+            document.getElementById('playerTitle').innerText = title;
             modal.style.display = 'flex';
         }
 
         function closePlayerModal() {
-            const modal = document.getElementById('playerModal');
-            const iframe = document.getElementById('videoPlayer');
-            iframe.src = ''; // Zatrzymuje odtwarzanie po zamknięciu
-            modal.style.display = 'none';
+            document.getElementById('playerModal').style.display = 'none';
+            document.getElementById('videoPlayer').src = ''; 
         }
 
-        // Zamknij modal po kliknięciu w tło
-        window.onclick = function(event) {
-            const modal = document.getElementById('playerModal');
-            if (event.target == modal) {
-                closePlayerModal();
-            }
-        }
-
-        // Uruchom ładowanie głównego folderu przy starcie
         loadFiles();
     </script>
 </body>
