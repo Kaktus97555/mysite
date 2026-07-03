@@ -65,7 +65,7 @@
     <nav class="navbar">
         <a href="#" class="logo" onclick="resetToRoot(event)">I KURWA ARCHIWUM</a>
         <div class="nav-right">
-            <span class="author-note">Strona stworzona przeze mnie</span>
+            <span class="author-note">Strona wykonana przez Kaktus 975</span>
             <button id="sourceToggleBtn" class="toggle-btn" onclick="toggleSource()">
                 ☁️ Źródło: Dysk
             </button>
@@ -107,8 +107,8 @@
         let folderHistory = []; 
         let sheetDatabase = []; // Pamięć podręczna arkusza
 
-        // TUTAJ WKLEJ ID SWOJEGO ARKUSZA GOOGLE
-        const SHEET_ID = 'TUTAJ_WKLEISZ_ID_ARKUSZA'; 
+        // TUTAJ JEST TWOJE ID ARKUSZA
+        const SHEET_ID = '1PE-EXZSdns2j0YbXP6BVdyRwTgs2J4gMWqiw_LjjRrg'; 
 
         // --- ZARZĄDZANIE WIDOKAMI ---
         function toggleSource() {
@@ -164,7 +164,7 @@
             try {
                 // Jeśli baza jest pusta, pobierz z Arkusza
                 if (sheetDatabase.length === 0) {
-                    if (SHEET_ID === '1PE-EXZSdns2j0YbXP6BVdyRwTgs2J4gMWqiw_LjjRrg') {
+                    if (SHEET_ID === 'TUTAJ_WKLEISZ_ID_ARKUSZA') {
                         gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Skonfiguruj ID Arkusza w kodzie strony (plik index.html).</div>`;
                         return;
                     }
@@ -264,7 +264,7 @@
             return card;
         }
 
-        // --- LOGIKA DYSKU GOOGLE (Stara funkcja przeniesiona tutaj) ---
+        // --- LOGIKA DYSKU GOOGLE ---
         async function loadFromDrive(folderId, folderName, gallery) {
             try {
                 let url = '/.netlify/functions/getFiles';
