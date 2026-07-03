@@ -12,8 +12,13 @@
         .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 4%; z-index: 1000; background-color: #1db954; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .logo { color: #ffffff; font-size: 26px; font-weight: bold; letter-spacing: 1px; text-decoration: none; text-transform: uppercase; cursor: pointer; }
         
-        /* WYGLĄD INFORMACJI O AUTORZE */
+        .nav-right { display: flex; align-items: center; gap: 20px; }
         .author-note { color: #ffffff; font-size: 14px; opacity: 0.9; font-weight: normal; letter-spacing: 0.5px; }
+        
+        /* PRZYCISK PRZEŁĄCZANIA */
+        .toggle-btn { background-color: #141414; color: white; border: 1px solid white; padding: 8px 16px; font-size: 14px; font-weight: bold; border-radius: 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .toggle-btn:hover { background-color: #333; transform: scale(1.05); }
+        .toggle-btn.mode-sheet { background-color: #ffffff; color: #1db954; border-color: #ffffff; }
 
         /* Główny Banner (Hero) */
         .hero { position: relative; height: 35vh; background: linear-gradient(to rgba(0,0,0,0.4), #141414), url('https://images.unsplash.com/photo-1574267431644-4ed38dd814a4?q=80&w=1600') no-repeat center center/cover; display: flex; flex-direction: column; justify-content: center; padding-left: 4%; }
@@ -44,12 +49,12 @@
 
         .loader { font-size: 16px; color: #aaa; padding: 20px 0; font-family: monospace; }
 
+        /* Modale */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background-color: #181818; border-radius: 8px; width: 100%; max-width: 500px; padding: 30px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.7); }
-        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 30px; color: #aaa; cursor: pointer; transition: 0.2s; z-index: 50; }
+        .modal-content { background-color: #181818; border-radius: 8px; width: 100%; max-width: 900px; padding: 0; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.7); overflow: hidden;}
+        .close-modal { position: absolute; top: -40px; right: 0; font-size: 35px; color: #fff; cursor: pointer; transition: 0.2s; z-index: 50; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
         .close-modal:hover { color: #1db954; }
         
-        .player-modal .modal-content { max-width: 900px; padding: 0; background-color: #000; overflow: hidden; }
         .player-modal iframe { width: 100%; display: block; aspect-ratio: 16/9; border: none; }
         .player-info { padding: 20px; background-color: #181818; }
         .player-info h3 { font-size: 20px; margin-bottom: 8px; }
@@ -59,13 +64,18 @@
 
     <nav class="navbar">
         <a href="#" class="logo" onclick="resetToRoot(event)">I KURWA ARCHIWUM</a>
-        <span class="author-note">Strona stworzona przez Kaktus975</span>
+        <div class="nav-right">
+            <span class="author-note">Strona stworzona przeze mnie</span>
+            <button id="sourceToggleBtn" class="toggle-btn" onclick="toggleSource()">
+                ☁️ Źródło: Dysk
+            </button>
+        </div>
     </nav>
 
     <header class="hero">
         <div class="hero-content">
             <h1 class="hero-title">Twoje Prywatne Archiwum</h1>
-            <p class="hero-desc">Kliknij w folder, aby wybrać sezon, a następnie odcinek prosto z Google Drive.</p>
+            <p class="hero-desc" id="heroDescription">Przeglądaj swoje seriale i filmy prosto z Dysku Google. Kliknij w folder, aby wybrać sezon, a następnie odcinek.</p>
         </div>
     </header>
 
@@ -80,19 +90,60 @@
     </section>
 
     <div class="modal player-modal" id="playerModal">
-        <div class="modal-content">
+        <div style="position:relative; width: 100%; max-width: 900px;">
             <span class="close-modal" onclick="closePlayerModal()">&times;</span>
-            <iframe id="videoPlayer" allowfullscreen></iframe>
-            <div class="player-info">
-                <h3 id="playerTitle">Tytuł Filmu</h3>
+            <div class="modal-content">
+                <iframe id="videoPlayer" allowfullscreen></iframe>
+                <div class="player-info">
+                    <h3 id="playerTitle">Tytuł Filmu</h3>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- KONFIGURACJA ---
+        let currentMode = 'drive'; // 'drive' lub 'sheet'
         let folderHistory = []; 
+        let sheetDatabase = []; // Pamięć podręczna arkusza
 
-        async function loadFiles(folderId = null, folderName = 'Biblioteka Główna') {
+        // TUTAJ WKLEJ ID SWOJEGO ARKUSZA GOOGLE
+        const SHEET_ID = 'TUTAJ_WKLEISZ_ID_ARKUSZA'; 
+
+        // --- ZARZĄDZANIE WIDOKAMI ---
+        function toggleSource() {
+            const btn = document.getElementById('sourceToggleBtn');
+            const desc = document.getElementById('heroDescription');
+            
+            if (currentMode === 'drive') {
+                currentMode = 'sheet';
+                btn.classList.add('mode-sheet');
+                btn.innerHTML = '📊 Źródło: Arkusz';
+                desc.innerText = 'Przeglądaj seriale zasilane z Arkusza Google. Nielimitowane miejsce, maksymalna prędkość.';
+            } else {
+                currentMode = 'drive';
+                btn.classList.remove('mode-sheet');
+                btn.innerHTML = '☁️ Źródło: Dysk';
+                desc.innerText = 'Przeglądaj swoje seriale i filmy prosto z Dysku Google. Kliknij w folder, aby wybrać sezon, a następnie odcinek.';
+            }
+            resetToRoot();
+        }
+
+        function resetToRoot(event) {
+            if (event) event.preventDefault();
+            folderHistory = [];
+            loadContent(null, 'Biblioteka Główna');
+        }
+
+        function goBack() {
+            if (folderHistory.length > 0) {
+                const previousFolder = folderHistory.pop();
+                loadContent(previousFolder.id, previousFolder.name);
+            }
+        }
+
+        // --- GŁÓWNA FUNKCJA ŁADUJĄCA (ROZDZIELA LOGIKĘ) ---
+        function loadContent(folderId = null, folderName = 'Biblioteka Główna') {
             const gallery = document.getElementById('drive-gallery');
             const backBtn = document.getElementById('backBtn');
             const titleEl = document.getElementById('currentFolderName');
@@ -101,88 +152,161 @@
             titleEl.innerText = folderName;
             backBtn.style.display = folderHistory.length > 0 ? 'block' : 'none';
 
+            if (currentMode === 'drive') {
+                loadFromDrive(folderId, folderName, gallery);
+            } else {
+                loadFromSheet(folderId, folderName, gallery);
+            }
+        }
+
+        // --- LOGIKA ARKUSZA GOOGLE ---
+        async function loadFromSheet(currentPath, folderName, gallery) {
+            try {
+                // Jeśli baza jest pusta, pobierz z Arkusza
+                if (sheetDatabase.length === 0) {
+                    if (SHEET_ID === '1PE-EXZSdns2j0YbXP6BVdyRwTgs2J4gMWqiw_LjjRrg') {
+                        gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Skonfiguruj ID Arkusza w kodzie strony (plik index.html).</div>`;
+                        return;
+                    }
+
+                    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+                    const response = await fetch(url);
+                    let text = await response.text();
+                    
+                    // Oczyszczanie danych Google
+                    text = text.substring(text.indexOf("({") + 1, text.lastIndexOf("})") + 1);
+                    const json = JSON.parse(text);
+
+                    // Konwertowanie na naszą bazę
+                    json.table.rows.forEach(row => {
+                        if (row.c[0] && row.c[0].v) { // Wymaga podania kategorii głównej
+                            sheetDatabase.push({
+                                serial: row.c[0] ? row.c[0].v.toString().trim() : '',
+                                sezon: row.c[1] && row.c[1].v ? row.c[1].v.toString().trim() : '',
+                                odcinek: row.c[2] && row.c[2].v ? row.c[2].v.toString().trim() : 'Brak Nazwy',
+                                wideoLink: row.c[3] && row.c[3].v ? row.c[3].v.toString().trim() : '',
+                                okładka: row.c[4] && row.c[4].v ? row.c[4].v.toString().trim() : ''
+                            });
+                        }
+                    });
+                }
+
+                gallery.innerHTML = '';
+                
+                // POZIOM 1: GŁÓWNA STRONA (Lista Seriali)
+                if (currentPath === null) {
+                    const seriale = [...new Set(sheetDatabase.map(item => item.serial))];
+                    
+                    seriale.forEach(nazwaSerialu => {
+                        // Szukamy okładki z pierwszego odcinka w tym serialu
+                        const przykladowyOdcinek = sheetDatabase.find(item => item.serial === nazwaSerialu && item.okładka !== '');
+                        const okladka = przykladowyOdcinek ? przykladowyOdcinek.okładka : null;
+                        
+                        gallery.appendChild(createFolderCard(nazwaSerialu, nazwaSerialu, okladka));
+                    });
+                } 
+                // POZIOM 2 LUB 3 (Wewnątrz Serialu)
+                else {
+                    const sciezka = currentPath.split('|');
+                    const kategoriaGlowna = sciezka[0];
+                    
+                    // Jesteśmy w konkretnym serialu (Widzimy Sezony lub od razu odcinki, jeśli nie ma sezonów)
+                    if (sciezka.length === 1) {
+                        const elementyWSerialu = sheetDatabase.filter(item => item.serial === kategoriaGlowna);
+                        const sezony = [...new Set(elementyWSerialu.map(item => item.sezon).filter(s => s !== ''))];
+                        
+                        if (sezony.length > 0) {
+                            // Pokazujemy Sezony jako foldery
+                            sezony.forEach(nazwaSezonu => {
+                                const przykladowyOdcinek = elementyWSerialu.find(item => item.sezon === nazwaSezonu && item.okładka !== '');
+                                const okladka = przykladowyOdcinek ? przykladowyOdcinek.okładka : null;
+                                gallery.appendChild(createFolderCard(nazwaSezonu, `${kategoriaGlowna}|${nazwaSezonu}`, okladka));
+                            });
+                        } else {
+                            // Nie ma sezonów, pokazujemy od razu wideo
+                            elementyWSerialu.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okładka)));
+                        }
+                    } 
+                    // Jesteśmy w konkretnym Sezonie
+                    else if (sciezka.length === 2) {
+                        const podKategoria = sciezka[1];
+                        const odcinki = sheetDatabase.filter(item => item.serial === kategoriaGlowna && item.sezon === podKategoria);
+                        odcinki.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okładka)));
+                    }
+                }
+
+                if (gallery.innerHTML === '') gallery.innerHTML = '<div class="loader">Brak plików w tej sekcji.</div>';
+
+            } catch (error) {
+                gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd odczytu Arkusza. Upewnij się, że jest opublikowany.</div>`;
+            }
+        }
+
+        // --- POMOCNICZE FUNKCJE TWORZĄCE KARTY ---
+        function createFolderCard(title, nextPathId, thumbUrl) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            const visual = thumbUrl ? `<img src="${thumbUrl}" alt="${title}">` : `<div class="folder-icon">📁</div>`;
+            card.innerHTML = `${visual}<div class="movie-info"><div class="card-title">${title}</div><div class="card-desc">Folder</div></div>`;
+            card.onclick = () => {
+                folderHistory.push({ id: folderHistory.length === 0 ? null : folderHistory[folderHistory.length-1].nextPathId, name: document.getElementById('currentFolderName').innerText });
+                loadContent(nextPathId, title);
+            };
+            return card;
+        }
+
+        function createVideoCard(title, videoUrl, thumbUrl) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            const visual = thumbUrl ? `<img src="${thumbUrl}" alt="${title}">` : `<img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500" alt="Brak">`;
+            card.innerHTML = `${visual}<div class="movie-info"><div class="card-title">${title}</div><div class="card-desc">Odtwórz wideo</div></div>`;
+            card.onclick = () => playMovie(videoUrl, title);
+            return card;
+        }
+
+        // --- LOGIKA DYSKU GOOGLE (Stara funkcja przeniesiona tutaj) ---
+        async function loadFromDrive(folderId, folderName, gallery) {
             try {
                 let url = '/.netlify/functions/getFiles';
                 if (folderId) url += `?folderId=${folderId}`;
-
                 const response = await fetch(url);
                 
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">BŁĄD KRYTYCZNY: Serwer nie odpowiada poprawnie.</div>`;
-                    return;
+                    gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">BŁĄD KRYTYCZNY: Serwer nie odpowiada poprawnie.</div>`; return;
                 }
-
                 const files = await response.json();
-
-                if (files.error) {
-                    gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd API Google: ${files.error}</div>`;
-                    return;
-                }
-
-                if (!files || files.length === 0) {
-                    gallery.innerHTML = '<div class="loader">Ten folder jest pusty.</div>';
-                    return;
-                }
+                if (files.error) { gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd API Google: ${files.error}</div>`; return; }
+                if (!files || files.length === 0) { gallery.innerHTML = '<div class="loader">Ten folder jest pusty.</div>'; return; }
 
                 gallery.innerHTML = ''; 
                 files.forEach(file => {
                     const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
-                    const card = document.createElement('div');
-                    card.className = 'movie-card';
-
-                    if (isFolder) {
-                        let folderVisual = `<div class="folder-icon">📁</div>`;
+                    const isShortcutToFolder = file.mimeType === 'application/vnd.google-apps.shortcut' && file.shortcutDetails && file.shortcutDetails.targetMimeType === 'application/vnd.google-apps.folder';
+                    
+                    if (isFolder || isShortcutToFolder) {
+                        const targetId = isShortcutToFolder ? file.shortcutDetails.targetId : file.id;
+                        let thumb = null;
+                        if (file.description && file.description.trim().startsWith('http')) thumb = file.description.trim();
                         
-                        if (file.description && file.description.trim().startsWith('http')) {
-                            folderVisual = `<img src="${file.description.trim()}" alt="${file.name}">`;
-                        }
-
-                        card.innerHTML = `
-                            ${folderVisual}
-                            <div class="movie-info">
-                                <div class="card-title">${file.name}</div>
-                                <div class="card-desc">Folder</div>
-                            </div>
-                        `;
+                        const card = createFolderCard(file.name, targetId, thumb);
                         card.onclick = () => {
                             folderHistory.push({ id: folderId, name: folderName });
-                            loadFiles(file.id, file.name);
+                            loadContent(targetId, file.name);
                         };
+                        gallery.appendChild(card);
                     } else {
                         const embedLink = file.webViewLink ? file.webViewLink.replace('/view?usp=drivesdk', '/preview') : '';
-                        const thumb = file.thumbnailLink ? file.thumbnailLink.replace('=s220', '=s600') : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500';
-                        const cleanName = file.name.replace(/\.[^/.]+$/, "");
-
-                        card.innerHTML = `
-                            <img src="${thumb}" alt="${cleanName}">
-                            <div class="movie-info">
-                                <div class="card-title">${cleanName}</div>
-                                <div class="card-desc">Odtwórz</div>
-                            </div>
-                        `;
-                        card.onclick = () => playMovie(embedLink, cleanName);
+                        let thumb = file.thumbnailLink ? file.thumbnailLink.replace('=s220', '=s600') : null;
+                        gallery.appendChild(createVideoCard(file.name.replace(/\.[^/.]+$/, ""), embedLink, thumb));
                     }
-                    gallery.appendChild(card);
                 });
             } catch (error) {
                 gallery.innerHTML = '<div class="loader" style="color:#e74c3c;">Brak połączenia z siecią.</div>';
             }
         }
 
-        function resetToRoot(event) {
-            if (event) event.preventDefault();
-            folderHistory = [];
-            loadFiles(null, 'Biblioteka Główna');
-        }
-
-        function goBack() {
-            if (folderHistory.length > 0) {
-                const previousFolder = folderHistory.pop();
-                loadFiles(previousFolder.id, previousFolder.name);
-            }
-        }
-
+        // --- ODTWARZACZ WIDEO ---
         function playMovie(url, title) {
             const modal = document.getElementById('playerModal');
             document.getElementById('videoPlayer').src = url;
@@ -195,7 +319,8 @@
             document.getElementById('videoPlayer').src = ''; 
         }
 
-        loadFiles();
+        // Uruchomienie
+        loadContent();
     </script>
 </body>
 </html>
