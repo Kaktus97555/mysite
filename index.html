@@ -34,18 +34,21 @@
         .back-btn { background-color: #333; color: white; border: 1px solid #555; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; transition: 0.2s; font-size: 14px; }
         .back-btn:hover { background-color: #1db954; border-color: #1db954; }
 
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .movie-card { background-color: #181818; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; aspect-ratio: 16/9; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid transparent; }
-        .movie-card:hover { transform: scale(1.05); box-shadow: 0px 8px 20px rgba(29, 185, 84, 0.3); z-index: 10; border-color: #1db954; }
-        .movie-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s; }
-        .movie-card:hover img { opacity: 1; }
+        /* WYGLĄD KART PIONOWYCH (NETFLIX STYLE) */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; }
         
-        .folder-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #222; font-size: 60px; color: #1db954; transition: 0.3s; }
-        .movie-card:hover .folder-icon { background: #2a2a2a; transform: scale(1.1); }
+        .movie-card { display: flex; flex-direction: column; background-color: transparent; border-radius: 6px; cursor: pointer; transition: transform 0.3s ease; position: relative; border: none; }
+        .movie-card:hover { transform: scale(1.05); z-index: 10; }
+        
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; opacity: 0.8; transition: opacity 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid transparent; }
+        .movie-card:hover img { opacity: 1; box-shadow: 0px 8px 20px rgba(29, 185, 84, 0.4); border-color: #1db954; }
+        
+        .folder-icon { width: 100%; aspect-ratio: 2/3; display: flex; align-items: center; justify-content: center; background: #222; font-size: 60px; color: #1db954; transition: 0.3s; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid transparent; }
+        .movie-card:hover .folder-icon { background: #2a2a2a; border-color: #1db954; box-shadow: 0px 8px 20px rgba(29, 185, 84, 0.4); }
 
-        .movie-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, rgba(0,0,0,0)); padding: 25px 15px 15px 15px; }
-        .card-title { font-size: 15px; font-weight: bold; margin-bottom: 4px; text-shadow: 1px 1px 3px black; }
-        .card-desc { font-size: 12px; color: #aaa; }
+        .movie-info { position: relative; width: 100%; background: none; padding: 8px 2px 0 2px; }
+        .card-title { font-size: 15px; font-weight: bold; margin-bottom: 2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-desc { font-size: 13px; color: #aaa; }
 
         .loader { font-size: 16px; color: #aaa; padding: 20px 0; font-family: monospace; }
 
@@ -65,7 +68,7 @@
     <nav class="navbar">
         <a href="#" class="logo" onclick="resetToRoot(event)">I KURWA ARCHIWUM</a>
         <div class="nav-right">
-            <span class="author-note">Strona wykonana przez Kaktus 975</span>
+            <span class="author-note">Strona wykonana przez Kaktus975</span>
             <button id="sourceToggleBtn" class="toggle-btn" onclick="toggleSource()">
                 ☁️ Źródło: Dysk
             </button>
@@ -103,11 +106,11 @@
 
     <script>
         // --- KONFIGURACJA ---
-        let currentMode = 'drive'; // 'drive' lub 'sheet'
+        let currentMode = 'drive'; 
         let folderHistory = []; 
-        let sheetDatabase = []; // Pamięć podręczna arkusza
+        let sheetDatabase = []; 
 
-        // TUTAJ JEST TWOJE ID ARKUSZA
+        // TWOJE ID ARKUSZA WPISANE NA TWARDO
         const SHEET_ID = '1PE-EXZSdns2j0YbXP6BVdyRwTgs2J4gMWqiw_LjjRrg'; 
 
         // --- ZARZĄDZANIE WIDOKAMI ---
@@ -119,12 +122,12 @@
                 currentMode = 'sheet';
                 btn.classList.add('mode-sheet');
                 btn.innerHTML = '📊 Źródło: Arkusz';
-                desc.innerText = 'Przeglądaj seriale zasilane z Arkusza Google. Nielimitowane miejsce, maksymalna prędkość.';
+                desc.innerText = 'Przeglądaj seriale zasilane z Arkusza Google. Twoje ulubione seriale na zamówienie.';
             } else {
                 currentMode = 'drive';
                 btn.classList.remove('mode-sheet');
                 btn.innerHTML = '☁️ Źródło: Dysk';
-                desc.innerText = 'Przeglądaj swoje seriale i filmy prosto z Dysku Google. Kliknij w folder, aby wybrać sezon, a następnie odcinek.';
+                desc.innerText = 'Przeglądaj swoje seriale i filmy prosto z Twojego ulubionego archiwum.';
             }
             resetToRoot();
         }
@@ -142,7 +145,6 @@
             }
         }
 
-        // --- GŁÓWNA FUNKCJA ŁADUJĄCA (ROZDZIELA LOGIKĘ) ---
         function loadContent(folderId = null, folderName = 'Biblioteka Główna') {
             const gallery = document.getElementById('drive-gallery');
             const backBtn = document.getElementById('backBtn');
@@ -159,33 +161,31 @@
             }
         }
 
-        // --- LOGIKA ARKUSZA GOOGLE ---
+        // --- LOGIKA ARKUSZA GOOGLE Z NOWYMI 4 POZIOMAMI ZAGNIEŻDŻENIA ---
         async function loadFromSheet(currentPath, folderName, gallery) {
             try {
-                // Jeśli baza jest pusta, pobierz z Arkusza
                 if (sheetDatabase.length === 0) {
-                    if (SHEET_ID === 'TUTAJ_WKLEISZ_ID_ARKUSZA') {
-                        gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Skonfiguruj ID Arkusza w kodzie strony (plik index.html).</div>`;
-                        return;
-                    }
-
                     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
                     const response = await fetch(url);
                     let text = await response.text();
-                    
-                    // Oczyszczanie danych Google
                     text = text.substring(text.indexOf("({") + 1, text.lastIndexOf("})") + 1);
                     const json = JSON.parse(text);
 
-                    // Konwertowanie na naszą bazę
                     json.table.rows.forEach(row => {
-                        if (row.c[0] && row.c[0].v) { // Wymaga podania kategorii głównej
+                        // IGNOROWANIE NAGŁÓWKÓW
+                        if (row.c[0] && row.c[0].v && (row.c[0].v.toString().trim().toLowerCase() === 'kategoria' || row.c[0].v.toString().trim().toLowerCase() === 'uniwersum')) {
+                            return; 
+                        }
+
+                        if (row.c[0] && row.c[0].v) { 
                             sheetDatabase.push({
-                                serial: row.c[0] ? row.c[0].v.toString().trim() : '',
-                                sezon: row.c[1] && row.c[1].v ? row.c[1].v.toString().trim() : '',
-                                odcinek: row.c[2] && row.c[2].v ? row.c[2].v.toString().trim() : 'Brak Nazwy',
-                                wideoLink: row.c[3] && row.c[3].v ? row.c[3].v.toString().trim() : '',
-                                okładka: row.c[4] && row.c[4].v ? row.c[4].v.toString().trim() : ''
+                                uniwersum: row.c[0] ? row.c[0].v.toString().trim() : '',       // Poziom 1: Ben 10
+                                serial: row.c[1] ? row.c[1].v.toString().trim() : '',          // Poziom 2: Obca Potęga
+                                sezon: row.c[2] ? row.c[2].v.toString().trim() : '',           // Poziom 3: Sezon 3
+                                odcinek: row.c[3] ? row.c[3].v.toString().trim() : 'Brak',     // Poziom 4: Odcinek 2
+                                wideoLink: row.c[4] ? row.c[4].v.toString().trim() : '',
+                                okładka: row.c[5] ? row.c[5].v.toString().trim() : '',
+                                okladkaFolderu: row.c[6] ? row.c[6].v.toString().trim() : ''
                             });
                         }
                     });
@@ -193,44 +193,68 @@
 
                 gallery.innerHTML = '';
                 
-                // POZIOM 1: GŁÓWNA STRONA (Lista Seriali)
+                // POZIOM 1: START (Wyświetla Uniwersa, np. Ben 10)
                 if (currentPath === null) {
-                    const seriale = [...new Set(sheetDatabase.map(item => item.serial))];
+                    const uniwersa = [...new Set(sheetDatabase.map(item => item.uniwersum))];
                     
-                    seriale.forEach(nazwaSerialu => {
-                        // Szukamy okładki z pierwszego odcinka w tym serialu
-                        const przykladowyOdcinek = sheetDatabase.find(item => item.serial === nazwaSerialu && item.okładka !== '');
-                        const okladka = przykladowyOdcinek ? przykladowyOdcinek.okładka : null;
+                    uniwersa.forEach(nazwaUniwersum => {
+                        const przykladowyOdcinek = sheetDatabase.find(item => item.uniwersum === nazwaUniwersum && (item.okladkaFolderu !== '' || item.okładka !== ''));
+                        const okladka = przykladowyOdcinek ? (przykladowyOdcinek.okladkaFolderu || przykladowyOdcinek.okładka) : null;
                         
-                        gallery.appendChild(createFolderCard(nazwaSerialu, nazwaSerialu, okladka));
+                        gallery.appendChild(createFolderCard(nazwaUniwersum, nazwaUniwersum, okladka));
                     });
                 } 
-                // POZIOM 2 LUB 3 (Wewnątrz Serialu)
                 else {
                     const sciezka = currentPath.split('|');
-                    const kategoriaGlowna = sciezka[0];
+                    const uniwersum = sciezka[0];
                     
-                    // Jesteśmy w konkretnym serialu (Widzimy Sezony lub od razu odcinki, jeśli nie ma sezonów)
+                    // POZIOM 2: Wszedłeś w Uniwersum (np. Ben 10) -> Pokazuje Seriale (np. Obca Potęga)
                     if (sciezka.length === 1) {
-                        const elementyWSerialu = sheetDatabase.filter(item => item.serial === kategoriaGlowna);
+                        const elementyWUni = sheetDatabase.filter(item => item.uniwersum === uniwersum);
+                        const seriale = [...new Set(elementyWUni.map(item => item.serial).filter(s => s !== ''))];
+                        
+                        if (seriale.length > 0) {
+                            seriale.forEach(nazwaSerialu => {
+                                const przykladowyOdcinek = elementyWUni.find(item => item.serial === nazwaSerialu && (item.okladkaFolderu !== '' || item.okładka !== ''));
+                                const okladka = przykladowyOdcinek ? (przykladowyOdcinek.okladkaFolderu || przykladowyOdcinek.okładka) : null;
+                                gallery.appendChild(createFolderCard(nazwaSerialu, `${uniwersum}|${nazwaSerialu}`, okladka));
+                            });
+                        } else {
+                            // Jeśli uniwersum nie ma seriali, sprawdza czy ma od razu sezony
+                            const sezony = [...new Set(elementyWUni.map(item => item.sezon).filter(s => s !== ''))];
+                            if(sezony.length > 0) {
+                                sezony.forEach(nazwaSezonu => {
+                                    const przykladowyOdcinek = elementyWUni.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okładka !== ''));
+                                    const okladka = przykladowyOdcinek ? (przykladowyOdcinek.okladkaFolderu || przykladowyOdcinek.okładka) : null;
+                                    gallery.appendChild(createFolderCard(nazwaSezonu, `${uniwersum}||${nazwaSezonu}`, okladka));
+                                });
+                            } else {
+                                // Jak nie ma nic po drodze, pokazuje wideo
+                                elementyWUni.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okładka)));
+                            }
+                        }
+                    } 
+                    // POZIOM 3: Wszedłeś w Serial (np. Obca potęga) -> Pokazuje Sezony
+                    else if (sciezka.length === 2) {
+                        const serial = sciezka[1];
+                        const elementyWSerialu = sheetDatabase.filter(item => item.uniwersum === uniwersum && item.serial === serial);
                         const sezony = [...new Set(elementyWSerialu.map(item => item.sezon).filter(s => s !== ''))];
                         
                         if (sezony.length > 0) {
-                            // Pokazujemy Sezony jako foldery
                             sezony.forEach(nazwaSezonu => {
-                                const przykladowyOdcinek = elementyWSerialu.find(item => item.sezon === nazwaSezonu && item.okładka !== '');
-                                const okladka = przykladowyOdcinek ? przykladowyOdcinek.okładka : null;
-                                gallery.appendChild(createFolderCard(nazwaSezonu, `${kategoriaGlowna}|${nazwaSezonu}`, okladka));
+                                const przykladowyOdcinek = elementyWSerialu.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okładka !== ''));
+                                const okladka = przykladowyOdcinek ? (przykladowyOdcinek.okladkaFolderu || przykladowyOdcinek.okładka) : null;
+                                gallery.appendChild(createFolderCard(nazwaSezonu, `${uniwersum}|${serial}|${nazwaSezonu}`, okladka));
                             });
                         } else {
-                            // Nie ma sezonów, pokazujemy od razu wideo
                             elementyWSerialu.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okładka)));
                         }
-                    } 
-                    // Jesteśmy w konkretnym Sezonie
-                    else if (sciezka.length === 2) {
-                        const podKategoria = sciezka[1];
-                        const odcinki = sheetDatabase.filter(item => item.serial === kategoriaGlowna && item.sezon === podKategoria);
+                    }
+                    // POZIOM 4: Wszedłeś w Sezon -> Pokazuje Odcinki
+                    else if (sciezka.length === 3) {
+                        const serial = sciezka[1];
+                        const sezon = sciezka[2];
+                        const odcinki = sheetDatabase.filter(item => item.uniwersum === uniwersum && item.serial === serial && item.sezon === sezon);
                         odcinki.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okładka)));
                     }
                 }
@@ -242,12 +266,11 @@
             }
         }
 
-        // --- POMOCNICZE FUNKCJE TWORZĄCE KARTY ---
         function createFolderCard(title, nextPathId, thumbUrl) {
             const card = document.createElement('div');
             card.className = 'movie-card';
             const visual = thumbUrl ? `<img src="${thumbUrl}" alt="${title}">` : `<div class="folder-icon">📁</div>`;
-            card.innerHTML = `${visual}<div class="movie-info"><div class="card-title">${title}</div><div class="card-desc">Folder</div></div>`;
+            card.innerHTML = `${visual}<div class="movie-info"><div class="card-title" title="${title}">${title}</div><div class="card-desc">Folder</div></div>`;
             card.onclick = () => {
                 folderHistory.push({ id: folderHistory.length === 0 ? null : folderHistory[folderHistory.length-1].nextPathId, name: document.getElementById('currentFolderName').innerText });
                 loadContent(nextPathId, title);
@@ -259,7 +282,7 @@
             const card = document.createElement('div');
             card.className = 'movie-card';
             const visual = thumbUrl ? `<img src="${thumbUrl}" alt="${title}">` : `<img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500" alt="Brak">`;
-            card.innerHTML = `${visual}<div class="movie-info"><div class="card-title">${title}</div><div class="card-desc">Odtwórz wideo</div></div>`;
+            card.innerHTML = `${visual}<div class="movie-info"><div class="card-title" title="${title}">${title}</div><div class="card-desc">Odtwórz wideo</div></div>`;
             card.onclick = () => playMovie(videoUrl, title);
             return card;
         }
@@ -319,7 +342,6 @@
             document.getElementById('videoPlayer').src = ''; 
         }
 
-        // Uruchomienie
         loadContent();
     </script>
 </body>
