@@ -8,23 +8,34 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
         body { background-color: #141414; color: #fff; padding-bottom: 50px; padding-top: 70px; }
 
+        /* NAV */
         .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 4%; z-index: 1000; background-color: #1db954; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .logo { color: #fff; font-size: 24px; font-weight: bold; text-decoration: none; cursor: pointer; text-transform: uppercase; }
-        .toggle-btn { background: #141414; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
-        
-        .hero { padding: 40px 4%; }
-        .hero-title { font-size: 32px; margin-bottom: 10px; }
-        
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; padding: 0 4%; }
-        .movie-card { cursor: pointer; transition: 0.3s; }
-        .movie-card:hover { transform: scale(1.05); }
-        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .folder-icon { width: 100%; aspect-ratio: 2/3; display: flex; align-items: center; justify-content: center; background: #222; font-size: 40px; color: #1db954; border-radius: 6px; }
-        .card-title { font-size: 14px; margin-top: 8px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .logo { color: #fff; font-size: 26px; font-weight: bold; text-decoration: none; text-transform: uppercase; cursor: pointer; }
+        .toggle-btn { background-color: #141414; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.3s; }
+        .toggle-btn:hover { background-color: #333; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; }
+        /* HERO */
+        .hero { padding: 40px 4%; background: linear-gradient(to bottom, #181818, #141414); }
+        .hero-title { font-size: 32px; margin-bottom: 10px; }
+        .back-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .back-btn:hover { background: #1db954; }
+
+        /* GRID */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; padding: 0 4%; }
+        .movie-card { cursor: pointer; transition: transform 0.3s; }
+        .movie-card:hover { transform: scale(1.05); }
+        .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid transparent; }
+        .movie-card:hover img { border-color: #1db954; }
+        
+        .folder-icon { width: 100%; aspect-ratio: 2/3; display: flex; align-items: center; justify-content: center; background: #222; font-size: 50px; color: #1db954; border-radius: 6px; border: 2px solid transparent; }
+        .movie-card:hover .folder-icon { border-color: #1db954; }
+
+        .card-title { font-size: 14px; margin-top: 8px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { width: 90%; max-width: 900px; position: relative; background: #181818; padding: 20px; border-radius: 8px; }
-        .close-modal { position: absolute; top: -40px; right: 0; cursor: pointer; font-size: 30px; color: white; }
+        .close-modal { position: absolute; top: -10px; right: 10px; cursor: pointer; font-size: 30px; color: white; }
     </style>
 </head>
 <body>
@@ -36,7 +47,7 @@
 
     <div class="hero">
         <h1 id="viewTitle">Biblioteka Główna</h1>
-        <button id="backBtn" style="display:none; margin-top:10px;" onclick="goBack()">← Wróć</button>
+        <button id="backBtn" class="back-btn" style="display:none;" onclick="goBack()">← Wróć</button>
     </div>
 
     <div class="movie-grid" id="gallery"></div>
@@ -45,7 +56,7 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
             <iframe id="videoPlayer" width="100%" height="450" frameborder="0" allowfullscreen></iframe>
-            <h3 id="playerTitle" style="margin-top: 15px;"></h3>
+            <h3 id="playerTitle" style="margin-top: 15px; color: #fff;"></h3>
         </div>
     </div>
 
@@ -53,8 +64,7 @@
         const SHEET_ID = '1PE-EXZSdns2j0YbXP6BVdyRwTgs2J4gMWqiw_LjjRrg';
         let currentMode = 'drive';
         let sheetDatabase = [];
-        let folderHistory = [];
-        let currentPath = []; // Tablica określająca głębokość (np. ['Ben 10', 'Sezon 1'])
+        let currentPath = [];
 
         function toggleSource() {
             currentMode = (currentMode === 'drive') ? 'sheet' : 'drive';
@@ -63,7 +73,6 @@
         }
 
         function resetToRoot() {
-            folderHistory = [];
             currentPath = [];
             loadContent();
         }
@@ -78,7 +87,7 @@
             const title = document.getElementById('viewTitle');
             const backBtn = document.getElementById('backBtn');
             
-            gallery.innerHTML = 'Ładowanie...';
+            gallery.innerHTML = '<div style="padding:20px;">Ładowanie...</div>';
             title.innerText = currentPath.length > 0 ? currentPath[currentPath.length - 1] : 'Biblioteka Główna';
             backBtn.style.display = currentPath.length > 0 ? 'block' : 'none';
 
@@ -89,33 +98,28 @@
         async function loadFromSheet() {
             if (sheetDatabase.length === 0) {
                 const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-                const res = await fetch(url);
-                let text = await res.text();
-                text = text.substring(text.indexOf("({") + 1, text.lastIndexOf("})") + 1);
-                const json = JSON.parse(text);
-                
-                json.table.rows.forEach(row => {
-                    const getVal = (i) => (row.c[i] && row.c[i].v) ? row.c[i].v.toString().trim() : '';
-                    if (getVal(0).toLowerCase() !== 'uniwersum') {
-                        sheetDatabase.push({
-                            p1: getVal(0), p2: getVal(1), p3: getVal(2), p4: getVal(3), 
-                            link: getVal(4), img: getVal(5)
-                        });
-                    }
-                });
+                try {
+                    const res = await fetch(url);
+                    let text = await res.text();
+                    text = text.substring(text.indexOf("({") + 1, text.lastIndexOf("})") + 1);
+                    const json = JSON.parse(text);
+                    json.table.rows.forEach(row => {
+                        const getVal = (i) => (row.c[i] && row.c[i].v) ? row.c[i].v.toString().trim() : '';
+                        if (getVal(0).toLowerCase() !== 'uniwersum') {
+                            sheetDatabase.push({ p1: getVal(0), p2: getVal(1), p3: getVal(2), p4: getVal(3), link: getVal(4), img: getVal(5) });
+                        }
+                    });
+                } catch(e) { gallery.innerHTML = "Błąd połączenia z Arkuszem."; return; }
             }
 
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
             
-            // Logika filtrowania po ścieżce
             let filtered = sheetDatabase;
             if (currentPath.length >= 1) filtered = filtered.filter(i => i.p1 === currentPath[0]);
             if (currentPath.length >= 2) filtered = filtered.filter(i => i.p2 === currentPath[1]);
             if (currentPath.length >= 3) filtered = filtered.filter(i => i.p3 === currentPath[2]);
 
-            // Znajdź unikalne elementy na następnym poziomie
-            let nextLevel = [];
             let key = `p${currentPath.length + 1}`;
             let items = [...new Set(filtered.map(i => i[key]))].filter(x => x !== '');
 
@@ -123,14 +127,13 @@
                 items.forEach(name => {
                     const card = document.createElement('div');
                     card.className = 'movie-card';
-                    // Znajdź miniaturkę dla tego folderu
-                    const itemData = sheetDatabase.find(i => i[key] === name && i.img !== '');
-                    card.innerHTML = `<div class="folder-icon">📁</div><div class="card-title">${name}</div>`;
+                    const thumbItem = filtered.find(i => i[key] === name && i.img !== '');
+                    const img = thumbItem ? `<img src="${thumbItem.img}">` : `<div class="folder-icon">📁</div>`;
+                    card.innerHTML = `${img}<div class="card-title">${name}</div>`;
                     card.onclick = () => { currentPath.push(name); loadContent(); };
                     gallery.appendChild(card);
                 });
             } else {
-                // Wyświetl odcinki
                 filtered.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'movie-card';
@@ -141,7 +144,26 @@
             }
         }
 
-        async function loadFromDrive() { /* Tu zostaje Twoja logika Dysku */ }
+        async function loadFromDrive() {
+            try {
+                let url = '/.netlify/functions/getFiles';
+                if (currentPath.length > 0) url += `?folderId=${currentPath[currentPath.length - 1]}`; // Uproszczone mapowanie
+                const res = await fetch(url);
+                const files = await res.json();
+                const gallery = document.getElementById('gallery');
+                gallery.innerHTML = '';
+                files.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'movie-card';
+                    card.innerHTML = `<div class="folder-icon">📁</div><div class="card-title">${item.name}</div>`;
+                    card.onclick = () => {
+                         if(item.mimeType.includes('folder')) { currentPath.push(item.id); loadContent(); }
+                         else playVideo(item.webViewLink?.replace('/view','/preview'), item.name);
+                    };
+                    gallery.appendChild(card);
+                });
+            } catch (e) { document.getElementById('gallery').innerText = "Błąd Dysku."; }
+        }
 
         function playVideo(url, title) {
             document.getElementById('videoPlayer').src = url;
