@@ -68,7 +68,7 @@
     <nav class="navbar">
         <a href="#" class="logo" onclick="resetToRoot(event)">I KURWA ARCHIWUM</a>
         <div class="nav-right">
-            <span class="author-note">Strona wykonana przez Kaktus975</span>
+            <span class="author-note">Strona wykonana przezKaktus 975</span>
             <button id="sourceToggleBtn" class="toggle-btn" onclick="toggleSource()">
                 ☁️ Źródło: Dysk
             </button>
@@ -78,7 +78,7 @@
     <header class="hero">
         <div class="hero-content">
             <h1 class="hero-title">Twoje Prywatne Archiwum</h1>
-            <p class="hero-desc" id="heroDescription">Przeglądaj swoje seriale i filmy prosto z Dysku Google. Kliknij w folder, aby wybrać sezon, a następnie odcinek.</p>
+            <p class="hero-desc" id="heroDescription">Przeglądaj swoje seriale i filmy prosto z Dysku Google. Z twojego ulubionego archiwum.</p>
         </div>
     </header>
 
@@ -92,6 +92,7 @@
         </div>
     </section>
 
+    <!-- Modal Odtwarzacza -->
     <div class="modal player-modal" id="playerModal">
         <div style="position:relative; width: 100%; max-width: 900px;">
             <span class="close-modal" onclick="closePlayerModal()">&times;</span>
@@ -110,7 +111,7 @@
         let folderHistory = []; 
         let sheetDatabase = []; 
 
-        // TWOJE ID ARKUSZA WPISANE NA TWARDO
+        // TWOJE ID ARKUSZA
         const SHEET_ID = '1PE-EXZSdns2j0YbXP6BVdyRwTgs2J4gMWqiw_LjjRrg'; 
 
         // --- ZARZĄDZANIE WIDOKAMI ---
@@ -122,12 +123,12 @@
                 currentMode = 'sheet';
                 btn.classList.add('mode-sheet');
                 btn.innerHTML = '📊 Źródło: Arkusz';
-                desc.innerText = 'Przeglądaj seriale zasilane z Arkusza Google. Twoje ulubione seriale na zamówienie.';
+                desc.innerText = 'Przeglądaj seriale zasilane z Arkusza Google. Seriale na Twoje zamówienie.';
             } else {
                 currentMode = 'drive';
                 btn.classList.remove('mode-sheet');
                 btn.innerHTML = '☁️ Źródło: Dysk';
-                desc.innerText = 'Przeglądaj swoje seriale i filmy prosto z Twojego ulubionego archiwum.';
+                desc.innerText = 'Przeglądaj swoje seriale i filmy prosto z Dysku Google. Z Twojego ulubionego archiwum.';
             }
             resetToRoot();
         }
@@ -161,31 +162,34 @@
             }
         }
 
-        // --- LOGIKA ARKUSZA GOOGLE Z NOWYMI 4 POZIOMAMI ZAGNIEŻDŻENIA ---
+        // --- LOGIKA ARKUSZA GOOGLE Z 4 POZIOMAMI I OKŁADKAMI ---
         async function loadFromSheet(currentPath, folderName, gallery) {
             try {
                 if (sheetDatabase.length === 0) {
                     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
                     const response = await fetch(url);
                     let text = await response.text();
+                    
+                    // Oczyszczanie danych Google
                     text = text.substring(text.indexOf("({") + 1, text.lastIndexOf("})") + 1);
                     const json = JSON.parse(text);
 
                     json.table.rows.forEach(row => {
                         // IGNOROWANIE NAGŁÓWKÓW
-                        if (row.c[0] && row.c[0].v && (row.c[0].v.toString().trim().toLowerCase() === 'kategoria' || row.c[0].v.toString().trim().toLowerCase() === 'uniwersum')) {
+                        if (row.c[0] && row.c[0].v && (row.c[0].v.toString().trim().toLowerCase() === 'uniwersum' || row.c[0].v.toString().trim().toLowerCase() === 'kategoria')) {
                             return; 
                         }
 
                         if (row.c[0] && row.c[0].v) { 
                             sheetDatabase.push({
-                                uniwersum: row.c[0] ? row.c[0].v.toString().trim() : '',       // Poziom 1: Ben 10
-                                serial: row.c[1] ? row.c[1].v.toString().trim() : '',          // Poziom 2: Obca Potęga
-                                sezon: row.c[2] ? row.c[2].v.toString().trim() : '',           // Poziom 3: Sezon 3
-                                odcinek: row.c[3] ? row.c[3].v.toString().trim() : 'Brak',     // Poziom 4: Odcinek 2
-                                wideoLink: row.c[4] ? row.c[4].v.toString().trim() : '',
-                                okładka: row.c[5] ? row.c[5].v.toString().trim() : '',
-                                okladkaFolderu: row.c[6] ? row.c[6].v.toString().trim() : ''
+                                uniwersum: row.c[0] ? row.c[0].v.toString().trim() : '',       // Kolumna A
+                                serial: row.c[1] ? row.c[1].v.toString().trim() : '',          // Kolumna B
+                                sezon: row.c[2] ? row.c[2].v.toString().trim() : '',           // Kolumna C
+                                odcinek: row.c[3] ? row.c[3].v.toString().trim() : 'Brak',     // Kolumna D
+                                wideoLink: row.c[4] ? row.c[4].v.toString().trim() : '',       // Kolumna E
+                                okladkaOdcinka: row.c[5] ? row.c[5].v.toString().trim() : '',  // Kolumna F
+                                okladkaFolderu: row.c[6] ? row.c[6].v.toString().trim() : '',  // Kolumna G
+                                okladkaUniwersum: row.c[7] ? row.c[7].v.toString().trim() : '' // Kolumna H
                             });
                         }
                     });
@@ -198,8 +202,8 @@
                     const uniwersa = [...new Set(sheetDatabase.map(item => item.uniwersum))];
                     
                     uniwersa.forEach(nazwaUniwersum => {
-                        const przykladowyOdcinek = sheetDatabase.find(item => item.uniwersum === nazwaUniwersum && (item.okladkaFolderu !== '' || item.okładka !== ''));
-                        const okladka = przykladowyOdcinek ? (przykladowyOdcinek.okladkaFolderu || przykladowyOdcinek.okładka) : null;
+                        const odc = sheetDatabase.find(item => item.uniwersum === nazwaUniwersum && (item.okladkaUniwersum !== '' || item.okladkaFolderu !== '' || item.okladkaOdcinka !== ''));
+                        const okladka = odc ? (odc.okladkaUniwersum || odc.okladkaFolderu || odc.okladkaOdcinka) : null;
                         
                         gallery.appendChild(createFolderCard(nazwaUniwersum, nazwaUniwersum, okladka));
                     });
@@ -208,33 +212,32 @@
                     const sciezka = currentPath.split('|');
                     const uniwersum = sciezka[0];
                     
-                    // POZIOM 2: Wszedłeś w Uniwersum (np. Ben 10) -> Pokazuje Seriale (np. Obca Potęga)
+                    // POZIOM 2: Wszedłeś w Uniwersum -> Pokazuje Seriale
                     if (sciezka.length === 1) {
                         const elementyWUni = sheetDatabase.filter(item => item.uniwersum === uniwersum);
                         const seriale = [...new Set(elementyWUni.map(item => item.serial).filter(s => s !== ''))];
                         
                         if (seriale.length > 0) {
                             seriale.forEach(nazwaSerialu => {
-                                const przykladowyOdcinek = elementyWUni.find(item => item.serial === nazwaSerialu && (item.okladkaFolderu !== '' || item.okładka !== ''));
-                                const okladka = przykladowyOdcinek ? (przykladowyOdcinek.okladkaFolderu || przykladowyOdcinek.okładka) : null;
+                                const odc = elementyWUni.find(item => item.serial === nazwaSerialu && (item.okladkaFolderu !== '' || item.okladkaOdcinka !== ''));
+                                const okladka = odc ? (odc.okladkaFolderu || odc.okladkaOdcinka) : null;
                                 gallery.appendChild(createFolderCard(nazwaSerialu, `${uniwersum}|${nazwaSerialu}`, okladka));
                             });
                         } else {
-                            // Jeśli uniwersum nie ma seriali, sprawdza czy ma od razu sezony
+                            // Sprawdza czy ma od razu sezony
                             const sezony = [...new Set(elementyWUni.map(item => item.sezon).filter(s => s !== ''))];
                             if(sezony.length > 0) {
                                 sezony.forEach(nazwaSezonu => {
-                                    const przykladowyOdcinek = elementyWUni.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okładka !== ''));
-                                    const okladka = przykladowyOdcinek ? (przykladowyOdcinek.okladkaFolderu || przykladowyOdcinek.okładka) : null;
+                                    const odc = elementyWUni.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okladkaOdcinka !== ''));
+                                    const okladka = odc ? (odc.okladkaFolderu || odc.okladkaOdcinka) : null;
                                     gallery.appendChild(createFolderCard(nazwaSezonu, `${uniwersum}||${nazwaSezonu}`, okladka));
                                 });
                             } else {
-                                // Jak nie ma nic po drodze, pokazuje wideo
-                                elementyWUni.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okładka)));
+                                elementyWUni.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okladkaOdcinka)));
                             }
                         }
                     } 
-                    // POZIOM 3: Wszedłeś w Serial (np. Obca potęga) -> Pokazuje Sezony
+                    // POZIOM 3: Wszedłeś w Serial -> Pokazuje Sezony
                     else if (sciezka.length === 2) {
                         const serial = sciezka[1];
                         const elementyWSerialu = sheetDatabase.filter(item => item.uniwersum === uniwersum && item.serial === serial);
@@ -242,12 +245,12 @@
                         
                         if (sezony.length > 0) {
                             sezony.forEach(nazwaSezonu => {
-                                const przykladowyOdcinek = elementyWSerialu.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okładka !== ''));
-                                const okladka = przykladowyOdcinek ? (przykladowyOdcinek.okladkaFolderu || przykladowyOdcinek.okładka) : null;
+                                const odc = elementyWSerialu.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okladkaOdcinka !== ''));
+                                const okladka = odc ? (odc.okladkaFolderu || odc.okladkaOdcinka) : null;
                                 gallery.appendChild(createFolderCard(nazwaSezonu, `${uniwersum}|${serial}|${nazwaSezonu}`, okladka));
                             });
                         } else {
-                            elementyWSerialu.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okładka)));
+                            elementyWSerialu.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okladkaOdcinka)));
                         }
                     }
                     // POZIOM 4: Wszedłeś w Sezon -> Pokazuje Odcinki
@@ -255,14 +258,14 @@
                         const serial = sciezka[1];
                         const sezon = sciezka[2];
                         const odcinki = sheetDatabase.filter(item => item.uniwersum === uniwersum && item.serial === serial && item.sezon === sezon);
-                        odcinki.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okładka)));
+                        odcinki.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okladkaOdcinka)));
                     }
                 }
 
                 if (gallery.innerHTML === '') gallery.innerHTML = '<div class="loader">Brak plików w tej sekcji.</div>';
 
             } catch (error) {
-                gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd odczytu Arkusza. Upewnij się, że jest opublikowany.</div>`;
+                gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd odczytu Arkusza. Upewnij się, że jest opublikowany i włączone jest udostępnianie linku!</div>`;
             }
         }
 
