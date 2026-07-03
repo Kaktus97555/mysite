@@ -68,7 +68,7 @@
     <nav class="navbar">
         <a href="#" class="logo" onclick="resetToRoot(event)">I KURWA ARCHIWUM</a>
         <div class="nav-right">
-            <span class="author-note">Strona wykonana przezKaktus 975</span>
+            <span class="author-note">Strona wykonana przez Kaktus 975</span>
             <button id="sourceToggleBtn" class="toggle-btn" onclick="toggleSource()">
                 ☁️ Źródło: Dysk
             </button>
@@ -78,7 +78,7 @@
     <header class="hero">
         <div class="hero-content">
             <h1 class="hero-title">Twoje Prywatne Archiwum</h1>
-            <p class="hero-desc" id="heroDescription">Przeglądaj swoje seriale i filmy prosto z Dysku Google. Z twojego ulubionego archiwum.</p>
+            <p class="hero-desc" id="heroDescription">Przeglądaj swoje seriale i filmy prosto z Dysku Google. Z Twojego ulubionego archiwum.</p>
         </div>
     </header>
 
@@ -92,7 +92,6 @@
         </div>
     </section>
 
-    <!-- Modal Odtwarzacza -->
     <div class="modal player-modal" id="playerModal">
         <div style="position:relative; width: 100%; max-width: 900px;">
             <span class="close-modal" onclick="closePlayerModal()">&times;</span>
@@ -110,6 +109,10 @@
         let currentMode = 'drive'; 
         let folderHistory = []; 
         let sheetDatabase = []; 
+
+        // System GPS dla folderów - NAPRAWIA PRZYCISK "WRÓĆ"
+        let currentActiveFolderId = null;
+        let currentActiveFolderName = 'Biblioteka Główna';
 
         // TWOJE ID ARKUSZA
         const SHEET_ID = '1PE-EXZSdns2j0YbXP6BVdyRwTgs2J4gMWqiw_LjjRrg'; 
@@ -147,6 +150,10 @@
         }
 
         function loadContent(folderId = null, folderName = 'Biblioteka Główna') {
+            // Zapisujemy aktualną pozycję przed załadowaniem czegokolwiek (GPS)
+            currentActiveFolderId = folderId;
+            currentActiveFolderName = folderName;
+
             const gallery = document.getElementById('drive-gallery');
             const backBtn = document.getElementById('backBtn');
             const titleEl = document.getElementById('currentFolderName');
@@ -228,124 +235,4 @@
                             const sezony = [...new Set(elementyWUni.map(item => item.sezon).filter(s => s !== ''))];
                             if(sezony.length > 0) {
                                 sezony.forEach(nazwaSezonu => {
-                                    const odc = elementyWUni.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okladkaOdcinka !== ''));
-                                    const okladka = odc ? (odc.okladkaFolderu || odc.okladkaOdcinka) : null;
-                                    gallery.appendChild(createFolderCard(nazwaSezonu, `${uniwersum}||${nazwaSezonu}`, okladka));
-                                });
-                            } else {
-                                elementyWUni.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okladkaOdcinka)));
-                            }
-                        }
-                    } 
-                    // POZIOM 3: Wszedłeś w Serial -> Pokazuje Sezony
-                    else if (sciezka.length === 2) {
-                        const serial = sciezka[1];
-                        const elementyWSerialu = sheetDatabase.filter(item => item.uniwersum === uniwersum && item.serial === serial);
-                        const sezony = [...new Set(elementyWSerialu.map(item => item.sezon).filter(s => s !== ''))];
-                        
-                        if (sezony.length > 0) {
-                            sezony.forEach(nazwaSezonu => {
-                                const odc = elementyWSerialu.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okladkaOdcinka !== ''));
-                                const okladka = odc ? (odc.okladkaFolderu || odc.okladkaOdcinka) : null;
-                                gallery.appendChild(createFolderCard(nazwaSezonu, `${uniwersum}|${serial}|${nazwaSezonu}`, okladka));
-                            });
-                        } else {
-                            elementyWSerialu.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okladkaOdcinka)));
-                        }
-                    }
-                    // POZIOM 4: Wszedłeś w Sezon -> Pokazuje Odcinki
-                    else if (sciezka.length === 3) {
-                        const serial = sciezka[1];
-                        const sezon = sciezka[2];
-                        const odcinki = sheetDatabase.filter(item => item.uniwersum === uniwersum && item.serial === serial && item.sezon === sezon);
-                        odcinki.forEach(odc => gallery.appendChild(createVideoCard(odc.odcinek, odc.wideoLink, odc.okladkaOdcinka)));
-                    }
-                }
-
-                if (gallery.innerHTML === '') gallery.innerHTML = '<div class="loader">Brak plików w tej sekcji.</div>';
-
-            } catch (error) {
-                gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd odczytu Arkusza. Upewnij się, że jest opublikowany i włączone jest udostępnianie linku!</div>`;
-            }
-        }
-
-        function createFolderCard(title, nextPathId, thumbUrl) {
-            const card = document.createElement('div');
-            card.className = 'movie-card';
-            const visual = thumbUrl ? `<img src="${thumbUrl}" alt="${title}">` : `<div class="folder-icon">📁</div>`;
-            card.innerHTML = `${visual}<div class="movie-info"><div class="card-title" title="${title}">${title}</div><div class="card-desc">Folder</div></div>`;
-            card.onclick = () => {
-                folderHistory.push({ id: folderHistory.length === 0 ? null : folderHistory[folderHistory.length-1].nextPathId, name: document.getElementById('currentFolderName').innerText });
-                loadContent(nextPathId, title);
-            };
-            return card;
-        }
-
-        function createVideoCard(title, videoUrl, thumbUrl) {
-            const card = document.createElement('div');
-            card.className = 'movie-card';
-            const visual = thumbUrl ? `<img src="${thumbUrl}" alt="${title}">` : `<img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500" alt="Brak">`;
-            card.innerHTML = `${visual}<div class="movie-info"><div class="card-title" title="${title}">${title}</div><div class="card-desc">Odtwórz wideo</div></div>`;
-            card.onclick = () => playMovie(videoUrl, title);
-            return card;
-        }
-
-        // --- LOGIKA DYSKU GOOGLE ---
-        async function loadFromDrive(folderId, folderName, gallery) {
-            try {
-                let url = '/.netlify/functions/getFiles';
-                if (folderId) url += `?folderId=${folderId}`;
-                const response = await fetch(url);
-                
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">BŁĄD KRYTYCZNY: Serwer nie odpowiada poprawnie.</div>`; return;
-                }
-                const files = await response.json();
-                if (files.error) { gallery.innerHTML = `<div class="loader" style="color:#e74c3c;">Błąd API Google: ${files.error}</div>`; return; }
-                if (!files || files.length === 0) { gallery.innerHTML = '<div class="loader">Ten folder jest pusty.</div>'; return; }
-
-                gallery.innerHTML = ''; 
-                files.forEach(file => {
-                    const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
-                    const isShortcutToFolder = file.mimeType === 'application/vnd.google-apps.shortcut' && file.shortcutDetails && file.shortcutDetails.targetMimeType === 'application/vnd.google-apps.folder';
-                    
-                    if (isFolder || isShortcutToFolder) {
-                        const targetId = isShortcutToFolder ? file.shortcutDetails.targetId : file.id;
-                        let thumb = null;
-                        if (file.description && file.description.trim().startsWith('http')) thumb = file.description.trim();
-                        
-                        const card = createFolderCard(file.name, targetId, thumb);
-                        card.onclick = () => {
-                            folderHistory.push({ id: folderId, name: folderName });
-                            loadContent(targetId, file.name);
-                        };
-                        gallery.appendChild(card);
-                    } else {
-                        const embedLink = file.webViewLink ? file.webViewLink.replace('/view?usp=drivesdk', '/preview') : '';
-                        let thumb = file.thumbnailLink ? file.thumbnailLink.replace('=s220', '=s600') : null;
-                        gallery.appendChild(createVideoCard(file.name.replace(/\.[^/.]+$/, ""), embedLink, thumb));
-                    }
-                });
-            } catch (error) {
-                gallery.innerHTML = '<div class="loader" style="color:#e74c3c;">Brak połączenia z siecią.</div>';
-            }
-        }
-
-        // --- ODTWARZACZ WIDEO ---
-        function playMovie(url, title) {
-            const modal = document.getElementById('playerModal');
-            document.getElementById('videoPlayer').src = url;
-            document.getElementById('playerTitle').innerText = title;
-            modal.style.display = 'flex';
-        }
-
-        function closePlayerModal() {
-            document.getElementById('playerModal').style.display = 'none';
-            document.getElementById('videoPlayer').src = ''; 
-        }
-
-        loadContent();
-    </script>
-</body>
-</html>
+                                    const odc = elementyWUni.find(item => item.sezon === nazwaSezonu && (item.okladkaFolderu !== '' || item.okladkaOdcinka
