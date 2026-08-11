@@ -10,20 +10,17 @@
 
         /* NAV */
         .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 4%; z-index: 1000; background-color: #1db954; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .logo { color: #fff; font-size: 26px; font-weight: bold; text-decoration: none; text-transform: uppercase; cursor: pointer; }
-        .toggle-btn { background-color: #141414; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.3s; }
-        .toggle-btn:hover { background-color: #333; }
+        .logo { color: #fff; font-size: 26px; font-weight: bold; text-decoration: none; text-transform: uppercase; }
 
         /* HERO */
         .hero { padding: 40px 4%; background: linear-gradient(to bottom, #181818, #141414); }
         .hero-title { font-size: 32px; margin-bottom: 10px; }
-        .back-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        .back-btn:hover { background: #1db954; }
 
         /* GRID */
         .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; padding: 0 4%; }
-        .movie-card { cursor: pointer; transition: transform 0.3s; }
+        .movie-card { transition: transform 0.3s; }
         .movie-card:hover { transform: scale(1.05); }
+        
         .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid transparent; }
         .movie-card:hover img { border-color: #1db954; }
         
@@ -31,152 +28,46 @@
         .movie-card:hover .folder-icon { border-color: #1db954; }
 
         .card-title { font-size: 14px; margin-top: 8px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { width: 90%; max-width: 900px; position: relative; background: #181818; padding: 20px; border-radius: 8px; }
-        .close-modal { position: absolute; top: -10px; right: 10px; cursor: pointer; font-size: 30px; color: white; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <a href="#" class="logo" onclick="resetToRoot()">I KURWA ARCHIWUM</a>
-        <button id="sourceToggleBtn" class="toggle-btn" onclick="toggleSource()">Źródło: Dysk</button>
+        <div class="logo">I KURWA ARCHIWUM</div>
     </nav>
 
     <div class="hero">
-        <h1 id="viewTitle">Biblioteka Główna</h1>
-        <button id="backBtn" class="back-btn" style="display:none;" onclick="goBack()">← Wróć</button>
+        <h1 class="hero-title">Biblioteka Główna</h1>
     </div>
 
-    <div class="movie-grid" id="gallery"></div>
-
-    <div class="modal" id="playerModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <iframe id="videoPlayer" width="100%" height="450" frameborder="0" allowfullscreen></iframe>
-            <h3 id="playerTitle" style="margin-top: 15px; color: #fff;"></h3>
+    <!-- Statyczna siatka z przykładową zawartością, aby było widać wygląd -->
+    <div class="movie-grid">
+        
+        <!-- Przykładowy Folder -->
+        <div class="movie-card">
+            <div class="folder-icon">📁</div>
+            <div class="card-title">Mój Folder 1</div>
         </div>
+
+        <!-- Przykładowy Folder 2 -->
+        <div class="movie-card">
+            <div class="folder-icon">📁</div>
+            <div class="card-title">Mój Folder 2</div>
+        </div>
+
+        <!-- Przykładowy Film -->
+        <div class="movie-card">
+            <img src="https://via.placeholder.com/160x240/222222/1db954?text=Wideo+1" alt="Plakat">
+            <div class="card-title">Super Film Akcji</div>
+        </div>
+
+        <!-- Przykładowy Film 2 -->
+        <div class="movie-card">
+            <img src="https://via.placeholder.com/160x240/222222/1db954?text=Wideo+2" alt="Plakat">
+            <div class="card-title">Śmieszne Koty</div>
+        </div>
+
     </div>
 
-    <script>
-        const SHEET_ID = '1PE-EXZSdns2j0YbXP6BVdyRwTgs2J4gMWqiw_LjjRrg';
-        let currentMode = 'drive';
-        let sheetDatabase = [];
-        let currentPath = [];
-
-        function toggleSource() {
-            currentMode = (currentMode === 'drive') ? 'sheet' : 'drive';
-            document.getElementById('sourceToggleBtn').innerText = (currentMode === 'drive') ? 'Źródło: Dysk' : 'Źródło: Arkusz';
-            resetToRoot();
-        }
-
-        function resetToRoot() {
-            currentPath = [];
-            loadContent();
-        }
-
-        function goBack() {
-            currentPath.pop();
-            loadContent();
-        }
-
-        async function loadContent() {
-            const gallery = document.getElementById('gallery');
-            const title = document.getElementById('viewTitle');
-            const backBtn = document.getElementById('backBtn');
-            
-            gallery.innerHTML = '<div style="padding:20px;">Ładowanie...</div>';
-            title.innerText = currentPath.length > 0 ? currentPath[currentPath.length - 1] : 'Biblioteka Główna';
-            backBtn.style.display = currentPath.length > 0 ? 'block' : 'none';
-
-            if (currentMode === 'drive') loadFromDrive();
-            else loadFromSheet();
-        }
-
-        async function loadFromSheet() {
-            if (sheetDatabase.length === 0) {
-                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-                try {
-                    const res = await fetch(url);
-                    let text = await res.text();
-                    text = text.substring(text.indexOf("({") + 1, text.lastIndexOf("})") + 1);
-                    const json = JSON.parse(text);
-                    json.table.rows.forEach(row => {
-                        const getVal = (i) => (row.c[i] && row.c[i].v) ? row.c[i].v.toString().trim() : '';
-                        if (getVal(0).toLowerCase() !== 'uniwersum') {
-                            sheetDatabase.push({ p1: getVal(0), p2: getVal(1), p3: getVal(2), p4: getVal(3), link: getVal(4), img: getVal(5) });
-                        }
-                    });
-                } catch(e) { gallery.innerHTML = "Błąd połączenia z Arkuszem."; return; }
-            }
-
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
-            
-            let filtered = sheetDatabase;
-            if (currentPath.length >= 1) filtered = filtered.filter(i => i.p1 === currentPath[0]);
-            if (currentPath.length >= 2) filtered = filtered.filter(i => i.p2 === currentPath[1]);
-            if (currentPath.length >= 3) filtered = filtered.filter(i => i.p3 === currentPath[2]);
-
-            let key = `p${currentPath.length + 1}`;
-            let items = [...new Set(filtered.map(i => i[key]))].filter(x => x !== '');
-
-            if (items.length > 0 && currentPath.length < 3) {
-                items.forEach(name => {
-                    const card = document.createElement('div');
-                    card.className = 'movie-card';
-                    const thumbItem = filtered.find(i => i[key] === name && i.img !== '');
-                    const img = thumbItem ? `<img src="${thumbItem.img}">` : `<div class="folder-icon">📁</div>`;
-                    card.innerHTML = `${img}<div class="card-title">${name}</div>`;
-                    card.onclick = () => { currentPath.push(name); loadContent(); };
-                    gallery.appendChild(card);
-                });
-            } else {
-                filtered.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'movie-card';
-                    card.innerHTML = `<img src="${item.img || 'https://via.placeholder.com/160x240'}"><div class="card-title">${item.p4}</div>`;
-                    card.onclick = () => playVideo(item.link, item.p4);
-                    gallery.appendChild(card);
-                });
-            }
-        }
-
-        async function loadFromDrive() {
-            try {
-                let url = '/.netlify/functions/getFiles';
-                if (currentPath.length > 0) url += `?folderId=${currentPath[currentPath.length - 1]}`; // Uproszczone mapowanie
-                const res = await fetch(url);
-                const files = await res.json();
-                const gallery = document.getElementById('gallery');
-                gallery.innerHTML = '';
-                files.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'movie-card';
-                    card.innerHTML = `<div class="folder-icon">📁</div><div class="card-title">${item.name}</div>`;
-                    card.onclick = () => {
-                         if(item.mimeType.includes('folder')) { currentPath.push(item.id); loadContent(); }
-                         else playVideo(item.webViewLink?.replace('/view','/preview'), item.name);
-                    };
-                    gallery.appendChild(card);
-                });
-            } catch (e) { document.getElementById('gallery').innerText = "Błąd Dysku."; }
-        }
-
-        function playVideo(url, title) {
-            document.getElementById('videoPlayer').src = url;
-            document.getElementById('playerTitle').innerText = title;
-            document.getElementById('playerModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('videoPlayer').src = '';
-            document.getElementById('playerModal').style.display = 'none';
-        }
-
-        resetToRoot();
-    </script>
 </body>
 </html>
