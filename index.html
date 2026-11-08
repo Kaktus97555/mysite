@@ -229,4 +229,171 @@
             <p>2. Jakie elementy i gatunki zostały przypisane w notatkach do "Pieśni o Rolandzie"?</p>
             <div class="options">
                 <label><input type="radio" name="q2" value="A"> A) Deskralizacja Maryi i lament</label>
-                <label><input type="radio" name="q2" value="B"> B) Ars
+                <label><input type="radio" name="q2" value="B"> B) Ars bene moriendi oraz poemat rycerski (chansons de geste)</label>
+                <label><input type="radio" name="q2" value="C"> C) Dance macabre i śmierć</label>
+                <label><input type="radio" name="q2" value="D"> D) Archaizmy i budowa pieśni</label>
+            </div>
+            <div id="q2-feedback" class="feedback"></div>
+        </div>
+
+        <!-- Pytanie 3 -->
+        <div class="question" id="q3-container">
+            <p>3. Co, zgodnie z zapisanymi informacjami o dramatach szekspirowskich, charakteryzuje "Makbeta"?</p>
+            <div class="options">
+                <label><input type="radio" name="q3" value="A"> A) Pełne podporządkowanie losów bohatera fatum</label>
+                <label><input type="radio" name="q3" value="B"> B) Brak fatum w losach bohatera</label>
+                <label><input type="radio" name="q3" value="C"> C) Cechy poezji tyrtejskiej</label>
+                <label><input type="radio" name="q3" value="D"> D) Obecność motywu vanitas</label>
+            </div>
+            <div id="q3-feedback" class="feedback"></div>
+        </div>
+
+        <!-- Pytanie 4 -->
+        <div class="question" id="q4-container">
+            <p>4. Wypisz z notatek dwa główne zagadnienia, które musisz znać w związku z "Iliadą" (dział "Antyk").</p>
+            <textarea id="q4-answer" placeholder="Wpisz swoją odpowiedź tutaj..."></textarea>
+            <div id="q4-feedback" class="feedback"></div>
+        </div>
+
+        <!-- Pytanie 5 -->
+        <div class="question" id="q5-container">
+            <p>5. Wymień przynajmniej dwa tytuły satyr oraz dwa tytuły bajek I. Krasickiego z notatek (dział "Oświecenie").</p>
+            <textarea id="q5-answer" placeholder="Wpisz swoją odpowiedź tutaj..."></textarea>
+            <div id="q5-feedback" class="feedback"></div>
+        </div>
+
+        <button id="check-btn">Oddaj sprawdzian do oceny</button>
+    </div>
+
+    <!-- Wynik -->
+    <div id="result-box">
+        <div class="score-display" id="score-text"></div>
+        <div id="teacher-comment"></div>
+    </div>
+</div>
+
+<script>
+    const topicsData = {
+        "Matematyka": ["Ułamki zwykłe i dziesiętne", "Równania kwadratowe"],
+        "Język Polski": ["Lalka - Bolesław Prus", "Zagadnienia maturalne (Z notatek)"]
+    };
+
+    const subjectSelect = document.getElementById("subject");
+    const topicSelect = document.getElementById("topic");
+    const generateBtn = document.getElementById("generate-btn");
+    const testContainer = document.getElementById("test-container");
+    const resultBox = document.getElementById("result-box");
+    const checkBtn = document.getElementById("check-btn");
+
+    subjectSelect.addEventListener("change", function() {
+        const selectedSubject = this.value;
+        topicSelect.innerHTML = '<option value="" disabled selected>-- Wybierz temat --</option>';
+        topicSelect.disabled = false;
+
+        if (topicsData[selectedSubject]) {
+            topicsData[selectedSubject].forEach(topic => {
+                const option = document.createElement("option");
+                option.value = topic;
+                option.textContent = topic;
+                topicSelect.appendChild(option);
+            });
+        }
+        
+        testContainer.style.display = "none";
+        resultBox.style.display = "none";
+    });
+
+    generateBtn.addEventListener("click", function() {
+        const topic = topicSelect.value;
+        if (!topic) {
+            alert("Proszę wybrać temat!");
+            return;
+        }
+
+        if (topic === "Zagadnienia maturalne (Z notatek)") {
+            testContainer.style.display = "block";
+            resultBox.style.display = "none";
+            // Reset stylów po poprzednich testach
+            document.querySelectorAll('.feedback').forEach(el => {
+                el.className = 'feedback';
+                el.innerHTML = '';
+            });
+        } else {
+            alert("Wersja demo: Na razie gotowy i zakodowany jest tylko sprawdzian 'Zagadnienia maturalne (Z notatek)' dla Języka Polskiego. Wybierz ten temat, aby przetestować interfejs!");
+        }
+    });
+
+    checkBtn.addEventListener("click", function() {
+        let score = 0;
+        
+        // Pytanie 1 (Odp: C)
+        const q1 = document.querySelector('input[name="q1"]:checked');
+        const q1Feedback = document.getElementById('q1-feedback');
+        if (q1 && q1.value === 'C') {
+            score++;
+            q1Feedback.textContent = "Świetnie! Hybris i konflikt tragiczny to kluczowe motywy w Antygonie.";
+            q1Feedback.className = "feedback correct";
+        } else {
+            q1Feedback.textContent = "Błąd. Poprawna odpowiedź to C (Hybris i konflikt tragiczny).";
+            q1Feedback.className = "feedback incorrect";
+        }
+
+        // Pytanie 2 (Odp: B)
+        const q2 = document.querySelector('input[name="q2"]:checked');
+        const q2Feedback = document.getElementById('q2-feedback');
+        if (q2 && q2.value === 'B') {
+            score++;
+            q2Feedback.textContent = "Dobrze! Zapisano 'ars bene moriendi' oraz poemat rycerski.";
+            q2Feedback.className = "feedback correct";
+        } else {
+            q2Feedback.textContent = "Niestety nie. Poprawna odpowiedź to B.";
+            q2Feedback.className = "feedback incorrect";
+        }
+
+        // Pytanie 3 (Odp: B)
+        const q3 = document.querySelector('input[name="q3"]:checked');
+        const q3Feedback = document.getElementById('q3-feedback');
+        if (q3 && q3.value === 'B') {
+            score++;
+            q3Feedback.textContent = "Idealnie. W notatkach wyraźnie zaznaczyłeś 'nie ma fatum' w Makbecie.";
+            q3Feedback.className = "feedback correct";
+        } else {
+            q3Feedback.textContent = "Błąd. Makbet, jako dramat szekspirowski, zrywa z antycznym fatum (Odp B).";
+            q3Feedback.className = "feedback incorrect";
+        }
+
+        // Pytanie 4 (Otwarte)
+        const q4Feedback = document.getElementById('q4-feedback');
+        q4Feedback.innerHTML = "<strong>Klucz odpowiedzi (sprawdź się):</strong> Zgodnie z notatkami, w kontekście Iliady powinieneś napisać o: 1) dlaczego doszło do wojny, 2) pojedynku Achillesa z Hektorem.";
+        q4Feedback.className = "feedback neutral";
+
+        // Pytanie 5 (Otwarte)
+        const q5Feedback = document.getElementById('q5-feedback');
+        q5Feedback.innerHTML = "<strong>Klucz odpowiedzi (sprawdź się):</strong><br>Satyry do wyboru z notatek: 'Do króla', 'Świat zepsuty', 'Żona modna'.<br>Bajki: 'Ptaszki w klatce', 'Przyjaciele'.";
+        q5Feedback.className = "feedback neutral";
+
+        // Obliczenie oceny (symulacja)
+        resultBox.style.display = "block";
+        const scoreDisplay = document.getElementById("score-text");
+        const comment = document.getElementById("teacher-comment");
+        
+        let finalGrade = 1;
+        if (score === 3) finalGrade = "4 (Dobry) lub 5 (Bardzo Dobry)";
+        else if (score === 2) finalGrade = "3 (Dostateczny)";
+        else if (score === 1) finalGrade = "2 (Dopuszczający)";
+
+        scoreDisplay.textContent = `Punkty z testu zamkniętego: ${score}/3`;
+        comment.innerHTML = `
+            <p><strong>Szacowana ocena szkolna (część zamknięta): ${finalGrade}</strong></p>
+            <p>Pytania otwarte zostały opatrzone kluczem. Przeczytaj go uważnie i porównaj ze swoimi odpowiedziami wpisanymi w pola tekstowe powyżej, aby ocenić, czy przyswoiłeś materiał.</p>
+        `;
+        
+        // Zablokowanie przycisku po sprawdzeniu
+        checkBtn.textContent = "Sprawdzian został oceniony";
+        checkBtn.disabled = true;
+        checkBtn.style.backgroundColor = "#9CA3AF";
+    });
+</script>
+
+</body>
+</html>
