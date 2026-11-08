@@ -3,132 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaktusowe Archiwum</title>
+    <title>Interaktywny Nauczyciel i Sprawdziany</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-        body { background-color: #141414; color: #fff; padding-top: 70px; overflow-x: hidden; }
-
-        /* NAV */
-        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 4%; z-index: 1000; background-color: #1db954; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .logo { color: #fff; font-size: 26px; font-weight: bold; text-decoration: none; text-transform: uppercase; }
-
-        /* CENTER MESSAGE */
-        .hero { 
-            height: calc(100vh - 70px); 
-            display: flex; 
-            flex-direction: column; /* Pozwala na ułożenie elementów w kolumnie */
-            justify-content: center; 
-            align-items: center; 
-            background: linear-gradient(to bottom, #181818, #141414); 
-            padding: 0 20px;
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --success: #10B981;
+            --error: #EF4444;
+            --bg: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --border: #D1D5DB;
         }
         
-        .completed-text { 
-            font-size: 5vw; 
-            font-weight: 900; 
-            color: #ffffff; 
-            text-transform: uppercase; 
-            letter-spacing: 5px; 
+        body {
+            margin: 0;
+            padding: 2rem;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
             text-align: center;
-            text-shadow: 0 0 20px rgba(29, 185, 84, 0.8), 0 0 50px rgba(29, 185, 84, 0.4);
-            margin-bottom: 30px;
+            color: var(--primary);
         }
 
-        /* BUTTON */
-        .projects-btn {
-            background-color: transparent;
-            color: #1db954;
-            border: 1px solid #1db954;
-            padding: 10px 24px;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
+        h1 { margin-top: 0; font-size: 1.8rem; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #374151; }
+
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .projects-btn:hover {
-            background-color: #1db954;
-            color: #141414;
-            box-shadow: 0 0 15px rgba(29, 185, 84, 0.5);
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
         }
 
-        /* FULLSCREEN MODAL */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100vw; 
-            height: 100vh; 
-            background: #000; 
-            z-index: 2000; 
-            justify-content: center; 
-            align-items: center; 
+        select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #F9FAFB;
+            box-sizing: border-box;
         }
         
-        .modal iframe {
-            width: 100vw;
-            height: 100vh;
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        select:disabled {
+            background-color: #E5E7EB;
+            cursor: not-allowed;
+            color: #9CA3AF;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: var(--primary);
+            color: white;
             border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 1rem;
         }
 
-        .close-modal { 
-            position: absolute; 
-            top: 15px; 
-            right: 25px; 
-            cursor: pointer; 
-            font-size: 40px; 
-            color: white; 
-            z-index: 2001; 
-            transition: color 0.3s;
+        button:hover { background-color: var(--primary-hover); }
+        button:active { transform: scale(0.98); }
+
+        #test-container, #result-box {
+            display: none;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #E5E7EB;
         }
 
-        .close-modal:hover {
-            color: #1db954;
+        .question {
+            background: #F9FAFB;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
         }
 
-        @media (max-width: 768px) {
-            .completed-text { font-size: 3rem; }
+        .question p {
+            margin-top: 0;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .options label:hover {
+            background: #EEF2FF;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .feedback.correct {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #10B981;
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #EF4444;
+            display: block;
+        }
+
+        .feedback.neutral {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #3B82F6;
+            display: block;
+        }
+        
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">Kaktusowe Archiwum</div>
-    </nav>
-
-    <div class="hero">
-        <h1 class="completed-text">Projekt zakończony</h1>
-        <button class="projects-btn" onclick="openRickroll()">Sprawdź inne projekty</button>
+<div class="container">
+    <h1>Platforma Sprawdzianów</h1>
+    
+    <div class="form-group">
+        <label for="subject">Wybierz przedmiot:</label>
+        <select id="subject">
+            <option value="" disabled selected>-- Wybierz --</option>
+            <option value="Matematyka">Matematyka</option>
+            <option value="Język Polski">Język Polski</option>
+        </select>
     </div>
 
-    <!-- Wideo Modal -->
-    <div class="modal" id="videoModal">
-        <span class="close-modal" onclick="closeRickroll()">&times;</span>
-        <iframe id="videoPlayer" allow="autoplay; fullscreen" allowfullscreen></iframe>
+    <div class="form-group">
+        <label for="topic">Wybierz temat:</label>
+        <select id="topic" disabled>
+            <option value="" disabled selected>-- Najpierw wybierz przedmiot --</option>
+        </select>
     </div>
 
-    <script>
-        function openRickroll() {
-            const modal = document.getElementById('videoModal');
-            const player = document.getElementById('videoPlayer');
-            
-            // Wstrzykujemy nowy link z parametrem autoplay (bez parametru start)
-            player.src = "https://www.youtube.com/embed/HFq68lbNtxA?autoplay=1";
-            modal.style.display = 'flex';
-        }
+    <button id="generate-btn">Wczytaj Sprawdzian</button>
 
-        function closeRickroll() {
-            const modal = document.getElementById('videoModal');
-            const player = document.getElementById('videoPlayer');
-            
-            // Usuwamy źródło, aby zatrzymać odtwarzanie dźwięku/wideo po zamknięciu
-            player.src = "";
-            modal.style.display = 'none';
-        }
-    </script>
-</body>
-</html>
+    <!-- Kontener na test -->
+    <div id="test-container">
+        <h2>Sprawdzian: Zagadnienia maturalne</h2>
+        
+        <!-- Pytanie 1 -->
+        <div class="question" id="q1-container">
+            <p>1. Z jakimi pojęciami, według notatek, wiąże się omówienie "Antygony"?</p>
+            <div class="options">
+                <label><input type="radio" name="q1" value="A"> A) Ars bene moriendi i dance macabre</label>
+                <label><input type="radio" name="q1" value="B"> B) Motyw vanitas i katastrofizm</label>
+                <label><input type="radio" name="q1" value="C"> C) Hybris i konflikt tragiczny</label>
+                <label><input type="radio" name="q1" value="D"> D) Komizm i komedia charakterów</label>
+            </div>
+            <div id="q1-feedback" class="feedback"></div>
+        </div>
+
+        <!-- Pytanie 2 -->
+        <div class="question" id="q2-container">
+            <p>2. Jakie elementy i gatunki zostały przypisane w notatkach do "Pieśni o Rolandzie"?</p>
+            <div class="options">
+                <label><input type="radio" name="q2" value="A"> A) Deskralizacja Maryi i lament</label>
+                <label><input type="radio" name="q2" value="B"> B) Ars
