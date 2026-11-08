@@ -35,26 +35,17 @@
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             box-sizing: border-box;
         }
 
-        h1, h2 {
-            text-align: center;
-            color: var(--primary);
-        }
-
+        h1, h2 { text-align: center; color: var(--primary); }
         h1 { margin-top: 0; font-size: 1.8rem; margin-bottom: 1.5rem; }
         h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #374151; }
 
         .form-group { margin-bottom: 1.5rem; }
 
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.95rem; }
 
         select, textarea {
             width: 100%;
@@ -68,22 +59,9 @@
             box-sizing: border-box;
         }
         
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-            font-family: inherit;
-        }
-
-        select:focus, textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-        }
-
-        select:disabled {
-            background-color: #E5E7EB;
-            cursor: not-allowed;
-            color: #9CA3AF;
-        }
+        textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+        select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); }
+        select:disabled { background-color: #E5E7EB; cursor: not-allowed; color: #9CA3AF; }
 
         button {
             width: 100%;
@@ -103,12 +81,7 @@
         button:active { transform: scale(0.98); }
         button:disabled { background-color: #9CA3AF; cursor: not-allowed; }
 
-        #test-area, #result-box {
-            display: none;
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 2px solid #E5E7EB;
-        }
+        #test-area, #result-box { display: none; margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #E5E7EB; }
 
         .question {
             background: #F9FAFB;
@@ -118,11 +91,7 @@
             border: 1px solid var(--border);
         }
 
-        .question p {
-            margin-top: 0;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
+        .question p { margin-top: 0; font-weight: 600; margin-bottom: 1rem; line-height: 1.4; }
 
         .options label {
             display: flex;
@@ -136,33 +105,16 @@
         }
 
         .options label:hover { background: #EEF2FF; }
+        .options input[type="radio"] { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--primary); }
 
-        .options input[type="radio"] {
-            margin-right: 10px;
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary);
-        }
-
-        .feedback {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            display: none;
-        }
-
+        .feedback { margin-top: 1rem; padding: 1rem; border-radius: 8px; font-size: 0.95rem; display: none; line-height: 1.4;}
         .feedback.correct { background-color: #D1FAE5; color: #065F46; border: 1px solid #10B981; display: block; }
         .feedback.incorrect { background-color: #FEE2E2; color: #991B1B; border: 1px solid #EF4444; display: block; }
         .feedback.neutral { background-color: #DBEAFE; color: #1E40AF; border: 1px solid #3B82F6; display: block; }
         
-        .score-display {
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-align: center;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
+        .score-display { font-size: 1.5rem; font-weight: bold; text-align: center; color: var(--primary); margin-bottom: 1rem; }
+        
+        .pool-info { text-align: center; font-size: 0.85rem; color: #6B7280; margin-top: 0.5rem; }
     </style>
 </head>
 <body>
@@ -186,15 +138,14 @@
     </div>
 
     <button id="generate-btn">Losuj Nowy Sprawdzian</button>
+    <div class="pool-info" id="pool-info"></div>
 
-    <!-- Obszar dynamicznego generowania testu -->
     <div id="test-area">
         <h2>Sprawdzian: Zagadnienia maturalne</h2>
         <div id="questions-container"></div>
         <button id="check-btn">Oddaj sprawdzian do oceny</button>
     </div>
 
-    <!-- Wynik -->
     <div id="result-box">
         <div class="score-display" id="score-text"></div>
         <div id="teacher-comment"></div>
@@ -202,89 +153,66 @@
 </div>
 
 <script>
-    // PULA PYTAŃ ZAMKNIĘTYCH (Wyciągnięte z Twoich notatek)
+    // MAKSYMALNA PULA PYTAŃ ZAMKNIĘTYCH (21 pytań)
     const closedPool = [
-        {
-            q: "Z jakimi pojęciami, według notatek, wiąże się omówienie 'Antygony'?",
-            options: {A: "Ars bene moriendi", B: "Motyw vanitas i katastrofizm", C: "Hybris i konflikt tragiczny", D: "Komizm"},
-            correct: "C",
-            feedback: "Zgadza się! Hybris (pycha) i konflikt tragiczny to główne zagadnienia z Antygony."
-        },
-        {
-            q: "Jakie elementy przypisałeś w notatkach do 'Pieśni o Rolandzie'?",
-            options: {A: "Deskralizacja Maryi", B: "Ars bene moriendi oraz poemat rycerski", C: "Dance macabre", D: "Archaizmy"},
-            correct: "B",
-            feedback: "Świetnie! 'Ars bene moriendi' (sztuka dobrego umierania) i chansons de geste pasują do Rolanda."
-        },
-        {
-            q: "Co charakteryzuje 'Makbeta' na tle dramatów z antyku?",
-            options: {A: "Pełne podporządkowanie fatum", B: "Brak fatum w losach bohatera", C: "Motyw vanitas", D: "Cechy sielanki"},
-            correct: "B",
-            feedback: "Dobrze! W notatkach zapisałeś 'nie ma fatum' w kontekście Makbeta."
-        },
-        {
-            q: "Jaki motyw jest przypisany do 'Rozmowy Mistrza Polikarpa ze Śmiercią'?",
-            options: {A: "Dance macabre", B: "Poemat rycerski", C: "Komedia charakterów", D: "Poezja tyrtejska"},
-            correct: "A",
-            feedback: "Poprawnie. 'Dance macabre' (taniec śmierci) to motyw przewodni tego utworu."
-        },
-        {
-            q: "Które zjawisko przypisałeś w notatkach do 'Lamentu świętokrzyskiego'?",
-            options: {A: "Budowa i archaizmy", B: "Konflikt tragiczny", C: "Deskralizacja Maryi", D: "Motyw cierpienia niezawinionego"},
-            correct: "C",
-            feedback: "Brawo. Deskralizacja Maryi (czyli ukazanie jej ludzkiego, cierpiącego oblicza) to klucz do Lamentu."
-        },
-        {
-            q: "Jakie cechy przypisałeś komedii 'Skąpiec'?",
-            options: {A: "Katastrofizm", B: "Komizm + komedia charakterów", C: "Motyw vanitas", D: "Hybris"},
-            correct: "B",
-            feedback: "Dokładnie tak, 'Skąpiec' to sztandarowy przykład komedii charakterów Molière'a."
-        }
+        { q: "Z jakimi pojęciami, według notatek, wiąże się omówienie 'Antygony'?", options: {A: "Ars bene moriendi", B: "Motyw vanitas", C: "Hybris i konflikt tragiczny", D: "Komizm"}, correct: "C", feedback: "Zgadza się! Hybris i konflikt tragiczny to główne zagadnienia z Antygony." },
+        { q: "Jakie elementy przypisałeś w notatkach do 'Pieśni o Rolandzie'?", options: {A: "Deskralizacja Maryi", B: "Ars bene moriendi oraz poemat rycerski", C: "Dance macabre", D: "Archaizmy"}, correct: "B", feedback: "Świetnie! 'Ars bene moriendi' i chansons de geste pasują do Rolanda." },
+        { q: "Co charakteryzuje 'Makbeta' na tle dramatów z antyku?", options: {A: "Fatum", B: "Brak fatum w losach bohatera", C: "Motyw vanitas", D: "Sielanka"}, correct: "B", feedback: "Dobrze! W notatkach zapisałeś 'nie ma fatum'." },
+        { q: "Jaki motyw jest przypisany do 'Rozmowy Mistrza Polikarpa ze Śmiercią'?", options: {A: "Dance macabre", B: "Poemat rycerski", C: "Komedia charakterów", D: "Poezja tyrtejska"}, correct: "A", feedback: "Poprawnie. Dance macabre to motyw z tego utworu." },
+        { q: "Które zjawisko przypisałeś w notatkach do 'Lamentu świętokrzyskiego'?", options: {A: "Budowa i archaizmy", B: "Konflikt tragiczny", C: "Deskralizacja Maryi", D: "Motyw cierpienia niezawinionego"}, correct: "C", feedback: "Brawo. Deskralizacja Maryi to klucz do Lamentu." },
+        { q: "Jakie cechy przypisałeś komedii 'Skąpiec'?", options: {A: "Katastrofizm", B: "Komizm + komedia charakterów", C: "Motyw vanitas", D: "Hybris"}, correct: "B", feedback: "Dokładnie tak, 'Skąpiec' to komedia charakterów." },
+        { q: "Z czym według notatek wiąże się Apokalipsa w Biblii?", options: {A: "Katastrofizm", B: "Sielanka", C: "Ars bene moriendi", D: "Komizm"}, correct: "A", feedback: "Dobrze! Apokalipsa powiązana z katastrofizmem." },
+        { q: "Jaki inny motyw biblijny znajduje się w notatkach?", options: {A: "Motyw vanitas i cierpienie niezawinione", B: "Dance macabre", C: "Hybris", D: "Poezja tyrtejska"}, correct: "A", feedback: "Zgadza się. Zapisano motyw vanitas oraz cierpienia niezawinionego." },
+        { q: "Do kogo skierowane są pieśni Horacego wymienione w notatkach?", options: {A: "Do Mecenasa", B: "Do króla", C: "Do trupa", D: "Do ojczyzny"}, correct: "A", feedback: "Świetnie! Zanotowałeś m.in. pieśń 'Do Mecenasa'." },
+        { q: "Z jakim pojęciem z notatek wiąże się Platon?", options: {A: "Jaskinia platońska", B: "Hybris", C: "Fatum", D: "Konflikt tragiczny"}, correct: "A", feedback: "Poprawna odpowiedź: Jaskinia platońska." },
+        { q: "Jakie dramaty, oprócz Skąpca, wypisałeś w dziale Oświecenie?", options: {A: "Tango i Wesele", B: "Hamlet i Boska komedia", C: "Makbet i Antygona", D: "Lalka i Dziady"}, correct: "B", feedback: "Zgadza się. Zapisano tam Hamleta i Boską komedię." },
+        { q: "Który z twórców barokowych napisał 'Krótkość żywota'?", options: {A: "Jan Andrzej Morsztyn", B: "Daniel Naborowski", C: "Mikołaj Sęp-Szarzyński", D: "Ignacy Krasicki"}, correct: "B", feedback: "Dokładnie, autorem jest Naborowski." },
+        { q: "Kto jest autorem utworu 'Do trupa' wymienionego na liście Baroku?", options: {A: "Daniel Naborowski", B: "Mikołaj Sęp-Szarzyński", C: "Jan Andrzej Morsztyn", D: "Jan Kochanowski"}, correct: "C", feedback: "Świetnie, Jan Andrzej Morsztyn to autor 'Do trupa'." },
+        { q: "Z twórczością jakiego autora barokowego wiąże się utwór 'O wojnie naszej...'?", options: {A: "Mikołaj Sęp-Szarzyński", B: "Daniel Naborowski", C: "Jan Kochanowski", D: "Horacy"}, correct: "A", feedback: "Poprawnie, zapisałeś Mikołaja Sęp-Szarzyńskiego." },
+        { q: "Jakie gatunki twórczości wymieniono w notatkach przy Ignacym Krasickim?", options: {A: "Treny i pieśni", B: "Satyry i bajki", C: "Komedie i dramaty", D: "Eposy i mity"}, correct: "B", feedback: "Dobrze! Wypisałeś jego satyry i bajki." },
+        { q: "Jaki rodzaj poezji został przypisany do utworu 'Hymn do miłości ojczyzny'?", options: {A: "Poezja śpiewana", B: "Poezja religijna", C: "Poezja tyrtejska", D: "Poezja żałobna"}, correct: "C", feedback: "Zgadza się! W notatkach widnieje 'poezja tyrtejska'." },
+        { q: "Co jest pierwszym punktem wymagań do matury w notatkach o Antyku?", options: {A: "Jaskinia platońska", B: "Historia Wojny Trojańskiej", C: "Definicja mitu", D: "Hybris"}, correct: "C", feedback: "Zgadza się, pierwszy punkt to 'definicja mitu'." },
+        { q: "Co z poniższych zalicza się do mitów przypisanych w notatkach do powtórki?", options: {A: "Legendy Tebańskie", B: "Rozmowa Mistrza Polikarpa", C: "Pieśń o Rolandzie", D: "Do trupa"}, correct: "A", feedback: "Dobrze, wymieniłeś Legendy Tebańskie." },
+        { q: "Które zagadnienie dopisałeś bezpośrednio do 'Iliady'?", options: {A: "Motyw vanitas", B: "Konflikt tragiczny", C: "Pojedynek Achillesa", D: "Katastrofizm"}, correct: "C", feedback: "Tak, zapisałeś 'Pojedynek Achillesa' w kontekście Iliady." },
+        { q: "Które treny Jana Kochanowskiego zostały wyraźnie wypisane cyframi rzymskimi?", options: {A: "V, VI, VII, VIII", B: "IX, X, XI", C: "I, II, III", D: "XIX"}, correct: "B", feedback: "Zgadza się, zanotowano Treny IX, X, XI." },
+        { q: "Jakie trzy zagadnienia wymieniono do utworu 'Bogurodzica'?", options: {A: "Treść, budowa, archaizmy", B: "Komizm, fatum, hybris", C: "Taniec, śmierć, katastrofizm", D: "Motyw vanitas, cierpienie, apokalipsa"}, correct: "A", feedback: "Dobrze! Zapisałeś 'treść + budowa + archaizmy'." }
     ];
 
-    // PULA PYTAŃ OTWARTYCH (Wyciągnięte z Twoich notatek)
+    // MAKSYMALNA PULA PYTAŃ OTWARTYCH (15 pytań)
     const openPool = [
-        {
-            q: "Wypisz z notatek dwa główne zagadnienia związane z 'Iliadą' (dział Antyk).",
-            key: "Klucz z notatek: 1) dlaczego doszło do wojny, 2) pojedynek Achillesa z Hektorem."
-        },
-        {
-            q: "Wymień przynajmniej dwa tytuły satyr i dwie bajki Ignacego Krasickiego z Twoich notatek.",
-            key: "Klucz z notatek: Satyry: 'Do króla', 'Świat zepsuty', 'Żona modna'. Bajki: 'Ptaszki w klatce', 'Przyjaciele'."
-        },
-        {
-            q: "Jakie mity antyczne musisz znać na maturę (wymień przynajmniej trzy zapisane w notatkach)?",
-            key: "Klucz z notatek (do wyboru): Niobe, Prometeusz, Syzyf, Orfeusz i Eurydyka, Legendy Tebańskie, Historia Wojny Trojańskiej."
-        },
-        {
-            q: "Jakie treny Jana Kochanowskiego zostały wymienione w notatkach do epoki Renesansu?",
-            key: "Klucz z notatek: Należało wymienić Treny: IX, X, XI."
-        },
-        {
-            q: "Jakie trzy zagadnienia przypisałeś w notatkach do 'Bogurodzicy'?",
-            key: "Klucz z notatek: 1) treść, 2) budowa, 3) archaizmy."
-        },
-        {
-            q: "Wymień trzech polskich poetów epoki Baroku wymienionych w notatkach.",
-            key: "Klucz z notatek: Daniel Naborowski, Jan Andrzej Morsztyn, Mikołaj Sęp-Szarzyński."
-        }
+        { q: "Wypisz z notatek dwa główne zagadnienia związane z 'Iliadą' (dział Antyk).", key: "1) Dlaczego doszło do wojny, 2) pojedynek Achillesa." },
+        { q: "Wymień przynajmniej dwa tytuły satyr i dwie bajki Ignacego Krasickiego z Twoich notatek.", key: "Satyry: 'Do króla', 'Świat zepsuty', 'Żona modna'. Bajki: 'Ptaszki w klatce', 'Przyjaciele'." },
+        { q: "Jakie mity antyczne musisz znać na maturę (wymień przynajmniej trzy zapisane w notatkach)?", key: "Niobe, Prometeusz, Syzyf, Orfeusz i Eurydyka, Legendy Tebańskie, Historia Wojny Trojańskiej." },
+        { q: "Jakie treny Jana Kochanowskiego zostały wymienione w notatkach do epoki Renesansu?", key: "Treny IX, X, XI." },
+        { q: "Jakie trzy zagadnienia przypisałeś w notatkach do 'Bogurodzicy'?", key: "1) Treść, 2) budowa, 3) archaizmy." },
+        { q: "Jakie utwory polskiego Baroku i ich autorów zanotowałeś? Podaj przynajmniej dwóch.", key: "Daniel Naborowski - 'Krótkość żywota', Jan Andrzej Morsztyn - 'Do trupa', Mikołaj Sęp-Szarzyński - 'O wojnie naszej...'." },
+        { q: "Jakie pojęcie przypisałeś do 'Hymnu do miłości ojczyzny' I. Krasickiego?", key: "Poezja tyrtejska." },
+        { q: "Od czego zaczynają się wymagania do matury w dziale Antyk (zapisane nad mitami)?", key: "Od definicji mitu." },
+        { q: "Jakie dwa pojęcia zostały dopisane do 'Pieśni o Rolandzie' w Średniowieczu?", key: "Ars bene moriendi oraz poemat rycerski (chansons de geste)." },
+        { q: "Co zapisałeś na temat 'Antygony'?", key: "Hybris i konflikt tragiczny." },
+        { q: "Podaj przynajmniej dwa motywy biblijne wypisane w Twoich notatkach.", key: "Motyw vanitas, motyw cierpienia niezawinionego, Apokalipsa (katastrofizm)." },
+        { q: "Z jakimi pojęciami (motywami) została powiązana 'Rozmowa Mistrza Polikarpa ze Śmiercią'?", key: "Dance macabre + śmierć." },
+        { q: "Jakie charakterystyczne zjawisko zostało przypisane do 'Lamentu świętokrzyskiego'?", key: "Deskralizacja Maryi." },
+        { q: "Czego, według Twojego dopisku przy dramacie szekspirowskim, nie ma w 'Makbecie'?", key: "Nie ma fatum." },
+        { q: "Podaj tytuły dramatów, które wymieniłeś na liście na samym dole strony z Oświeceniem (pod Skąpcem).", key: "Hamlet, Boska komedia." }
     ];
 
-    // Zmienne globalne do przechowywania wylosowanych pytań dla obecnej sesji
     let currentClosed = [];
     let currentOpen = [];
 
-    const topicsData = {
-        "Język Polski": ["Zagadnienia maturalne (Losowe Pytania)"]
-    };
+    const topicsData = { "Język Polski": ["Zagadnienia maturalne z notatek (MAX)"] };
 
     const subjectSelect = document.getElementById("subject");
     const topicSelect = document.getElementById("topic");
     const generateBtn = document.getElementById("generate-btn");
+    const poolInfo = document.getElementById("pool-info");
     const testArea = document.getElementById("test-area");
     const questionsContainer = document.getElementById("questions-container");
     const resultBox = document.getElementById("result-box");
     const checkBtn = document.getElementById("check-btn");
+
+    // Inicjalizacja informacji o puli
+    poolInfo.textContent = `Pula bazy danych: ${closedPool.length} pytań zamkniętych, ${openPool.length} pytań otwartych.`;
 
     subjectSelect.addEventListener("change", function() {
         const selectedSubject = this.value;
@@ -297,7 +225,6 @@
         resultBox.style.display = "none";
     });
 
-    // Funkcja mieszająca tablicę (Fisher-Yates)
     function shuffleArray(array) {
         let arr = [...array];
         for (let i = arr.length - 1; i > 0; i--) {
@@ -307,14 +234,9 @@
         return arr;
     }
 
-    // Losowanie testu i renderowanie DOM
     generateBtn.addEventListener("click", function() {
-        if (!topicSelect.value) {
-            alert("Wybierz temat!");
-            return;
-        }
+        if (!topicSelect.value) { alert("Wybierz temat!"); return; }
 
-        // Reset UI
         checkBtn.textContent = "Oddaj sprawdzian do oceny";
         checkBtn.disabled = false;
         checkBtn.style.backgroundColor = "var(--primary)";
@@ -322,13 +244,12 @@
         questionsContainer.innerHTML = "";
         testArea.style.display = "block";
 
-        // Losowanie pytań (3 zamknięte, 2 otwarte)
+        // Losowanie: 3 zamknięte, 2 otwarte na test
         currentClosed = shuffleArray(closedPool).slice(0, 3);
         currentOpen = shuffleArray(openPool).slice(0, 2);
 
         let questionNumber = 1;
 
-        // Renderowanie pytań zamkniętych
         currentClosed.forEach((qObj, index) => {
             const optionsHtml = Object.entries(qObj.options).map(([key, value]) => `
                 <label><input type="radio" name="c_${index}" value="${key}"> ${key}) ${value}</label>
@@ -344,12 +265,11 @@
             questionNumber++;
         });
 
-        // Renderowanie pytań otwartych
         currentOpen.forEach((qObj, index) => {
             questionsContainer.innerHTML += `
                 <div class="question">
                     <p>${questionNumber}. ${qObj.q}</p>
-                    <textarea placeholder="Wpisz swoją odpowiedź tutaj..."></textarea>
+                    <textarea placeholder="Wpisz swoją odpowiedź..."></textarea>
                     <div id="o-feedback-${index}" class="feedback"></div>
                 </div>
             `;
@@ -357,11 +277,9 @@
         });
     });
 
-    // Ocenianie sprawdzianu
     checkBtn.addEventListener("click", function() {
         let score = 0;
 
-        // Sprawdzanie pytań zamkniętych
         currentClosed.forEach((qObj, index) => {
             const selected = document.querySelector(`input[name="c_${index}"]:checked`);
             const feedbackBox = document.getElementById(`c-feedback-${index}`);
@@ -381,14 +299,12 @@
             }
         });
 
-        // Pokazywanie klucza do pytań otwartych
         currentOpen.forEach((qObj, index) => {
             const feedbackBox = document.getElementById(`o-feedback-${index}`);
-            feedbackBox.innerHTML = `<strong>Sprawdź się (Klucz Nauczyciela):</strong><br>${qObj.key}`;
+            feedbackBox.innerHTML = `<strong>Klucz oceniania (AI):</strong><br>${qObj.key}`;
             feedbackBox.className = "feedback neutral";
         });
 
-        // Obliczenie i wyświetlenie wyniku
         const scoreDisplay = document.getElementById("score-text");
         const comment = document.getElementById("teacher-comment");
         
@@ -398,13 +314,13 @@
         else if (score === 1) finalGrade = "2";
 
         resultBox.style.display = "block";
-        scoreDisplay.textContent = `Wynik: ${score}/3 punktów`;
+        scoreDisplay.textContent = `Punkty (zamknięte): ${score}/3`;
         comment.innerHTML = `
-            <p><strong>Szacowana ocena za pytania zamknięte: ${finalGrade}</strong></p>
-            <p>Przeczytaj wygenerowane klucze pod pytaniami otwartymi i zrób samoocenę swojego tekstu. Kliknij <em>"Losuj Nowy Sprawdzian"</em> u góry, aby wygenerować zupełnie nowy, inny zestaw pytań z tego samego działu!</p>
+            <p><strong>Szacunkowa ocena: ${finalGrade}</strong></p>
+            <p>Pytania otwarte musisz ocenić sam na podstawie zielonego klucza. Jeśli chcesz poćwiczyć więcej zagadnień z notatek, kliknij <em>"Losuj Nowy Sprawdzian"</em> u góry – system wylosuje kolejne 5 pytań z dostępnej bazy 36 zagadnień!</p>
         `;
         
-        checkBtn.textContent = "Sprawdzian został oceniony";
+        checkBtn.textContent = "Test sprawdzony";
         checkBtn.disabled = true;
     });
 </script>
