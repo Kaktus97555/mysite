@@ -114,7 +114,7 @@
         
         .score-display { font-size: 1.5rem; font-weight: bold; text-align: center; color: var(--primary); margin-bottom: 1rem; }
         
-        .pool-info { text-align: center; font-size: 0.85rem; color: #6B7280; margin-top: 0.5rem; }
+        .pool-info { text-align: center; font-size: 0.85rem; color: #6B7280; margin-top: 0.5rem; display: none; }
     </style>
 </head>
 <body>
@@ -131,7 +131,7 @@
     </div>
 
     <div class="form-group">
-        <label for="topic">Wybierz temat:</label>
+        <label for="topic">Wybierz temat sprawdzianu:</label>
         <select id="topic" disabled>
             <option value="" disabled selected>-- Najpierw wybierz przedmiot --</option>
         </select>
@@ -141,7 +141,7 @@
     <div class="pool-info" id="pool-info"></div>
 
     <div id="test-area">
-        <h2>Sprawdzian: Zagadnienia maturalne</h2>
+        <h2 id="test-title">Sprawdzian</h2>
         <div id="questions-container"></div>
         <button id="check-btn">Oddaj sprawdzian do oceny</button>
     </div>
@@ -153,78 +153,135 @@
 </div>
 
 <script>
-    // MAKSYMALNA PULA PYTAŃ ZAMKNIĘTYCH (21 pytań)
-    const closedPool = [
-        { q: "Z jakimi pojęciami, według notatek, wiąże się omówienie 'Antygony'?", options: {A: "Ars bene moriendi", B: "Motyw vanitas", C: "Hybris i konflikt tragiczny", D: "Komizm"}, correct: "C", feedback: "Zgadza się! Hybris i konflikt tragiczny to główne zagadnienia z Antygony." },
-        { q: "Jakie elementy przypisałeś w notatkach do 'Pieśni o Rolandzie'?", options: {A: "Deskralizacja Maryi", B: "Ars bene moriendi oraz poemat rycerski", C: "Dance macabre", D: "Archaizmy"}, correct: "B", feedback: "Świetnie! 'Ars bene moriendi' i chansons de geste pasują do Rolanda." },
-        { q: "Co charakteryzuje 'Makbeta' na tle dramatów z antyku?", options: {A: "Fatum", B: "Brak fatum w losach bohatera", C: "Motyw vanitas", D: "Sielanka"}, correct: "B", feedback: "Dobrze! W notatkach zapisałeś 'nie ma fatum'." },
-        { q: "Jaki motyw jest przypisany do 'Rozmowy Mistrza Polikarpa ze Śmiercią'?", options: {A: "Dance macabre", B: "Poemat rycerski", C: "Komedia charakterów", D: "Poezja tyrtejska"}, correct: "A", feedback: "Poprawnie. Dance macabre to motyw z tego utworu." },
-        { q: "Które zjawisko przypisałeś w notatkach do 'Lamentu świętokrzyskiego'?", options: {A: "Budowa i archaizmy", B: "Konflikt tragiczny", C: "Deskralizacja Maryi", D: "Motyw cierpienia niezawinionego"}, correct: "C", feedback: "Brawo. Deskralizacja Maryi to klucz do Lamentu." },
-        { q: "Jakie cechy przypisałeś komedii 'Skąpiec'?", options: {A: "Katastrofizm", B: "Komizm + komedia charakterów", C: "Motyw vanitas", D: "Hybris"}, correct: "B", feedback: "Dokładnie tak, 'Skąpiec' to komedia charakterów." },
-        { q: "Z czym według notatek wiąże się Apokalipsa w Biblii?", options: {A: "Katastrofizm", B: "Sielanka", C: "Ars bene moriendi", D: "Komizm"}, correct: "A", feedback: "Dobrze! Apokalipsa powiązana z katastrofizmem." },
-        { q: "Jaki inny motyw biblijny znajduje się w notatkach?", options: {A: "Motyw vanitas i cierpienie niezawinione", B: "Dance macabre", C: "Hybris", D: "Poezja tyrtejska"}, correct: "A", feedback: "Zgadza się. Zapisano motyw vanitas oraz cierpienia niezawinionego." },
-        { q: "Do kogo skierowane są pieśni Horacego wymienione w notatkach?", options: {A: "Do Mecenasa", B: "Do króla", C: "Do trupa", D: "Do ojczyzny"}, correct: "A", feedback: "Świetnie! Zanotowałeś m.in. pieśń 'Do Mecenasa'." },
-        { q: "Z jakim pojęciem z notatek wiąże się Platon?", options: {A: "Jaskinia platońska", B: "Hybris", C: "Fatum", D: "Konflikt tragiczny"}, correct: "A", feedback: "Poprawna odpowiedź: Jaskinia platońska." },
-        { q: "Jakie dramaty, oprócz Skąpca, wypisałeś w dziale Oświecenie?", options: {A: "Tango i Wesele", B: "Hamlet i Boska komedia", C: "Makbet i Antygona", D: "Lalka i Dziady"}, correct: "B", feedback: "Zgadza się. Zapisano tam Hamleta i Boską komedię." },
-        { q: "Który z twórców barokowych napisał 'Krótkość żywota'?", options: {A: "Jan Andrzej Morsztyn", B: "Daniel Naborowski", C: "Mikołaj Sęp-Szarzyński", D: "Ignacy Krasicki"}, correct: "B", feedback: "Dokładnie, autorem jest Naborowski." },
-        { q: "Kto jest autorem utworu 'Do trupa' wymienionego na liście Baroku?", options: {A: "Daniel Naborowski", B: "Mikołaj Sęp-Szarzyński", C: "Jan Andrzej Morsztyn", D: "Jan Kochanowski"}, correct: "C", feedback: "Świetnie, Jan Andrzej Morsztyn to autor 'Do trupa'." },
-        { q: "Z twórczością jakiego autora barokowego wiąże się utwór 'O wojnie naszej...'?", options: {A: "Mikołaj Sęp-Szarzyński", B: "Daniel Naborowski", C: "Jan Kochanowski", D: "Horacy"}, correct: "A", feedback: "Poprawnie, zapisałeś Mikołaja Sęp-Szarzyńskiego." },
-        { q: "Jakie gatunki twórczości wymieniono w notatkach przy Ignacym Krasickim?", options: {A: "Treny i pieśni", B: "Satyry i bajki", C: "Komedie i dramaty", D: "Eposy i mity"}, correct: "B", feedback: "Dobrze! Wypisałeś jego satyry i bajki." },
-        { q: "Jaki rodzaj poezji został przypisany do utworu 'Hymn do miłości ojczyzny'?", options: {A: "Poezja śpiewana", B: "Poezja religijna", C: "Poezja tyrtejska", D: "Poezja żałobna"}, correct: "C", feedback: "Zgadza się! W notatkach widnieje 'poezja tyrtejska'." },
-        { q: "Co jest pierwszym punktem wymagań do matury w notatkach o Antyku?", options: {A: "Jaskinia platońska", B: "Historia Wojny Trojańskiej", C: "Definicja mitu", D: "Hybris"}, correct: "C", feedback: "Zgadza się, pierwszy punkt to 'definicja mitu'." },
-        { q: "Co z poniższych zalicza się do mitów przypisanych w notatkach do powtórki?", options: {A: "Legendy Tebańskie", B: "Rozmowa Mistrza Polikarpa", C: "Pieśń o Rolandzie", D: "Do trupa"}, correct: "A", feedback: "Dobrze, wymieniłeś Legendy Tebańskie." },
-        { q: "Które zagadnienie dopisałeś bezpośrednio do 'Iliady'?", options: {A: "Motyw vanitas", B: "Konflikt tragiczny", C: "Pojedynek Achillesa", D: "Katastrofizm"}, correct: "C", feedback: "Tak, zapisałeś 'Pojedynek Achillesa' w kontekście Iliady." },
-        { q: "Które treny Jana Kochanowskiego zostały wyraźnie wypisane cyframi rzymskimi?", options: {A: "V, VI, VII, VIII", B: "IX, X, XI", C: "I, II, III", D: "XIX"}, correct: "B", feedback: "Zgadza się, zanotowano Treny IX, X, XI." },
-        { q: "Jakie trzy zagadnienia wymieniono do utworu 'Bogurodzica'?", options: {A: "Treść, budowa, archaizmy", B: "Komizm, fatum, hybris", C: "Taniec, śmierć, katastrofizm", D: "Motyw vanitas, cierpienie, apokalipsa"}, correct: "A", feedback: "Dobrze! Zapisałeś 'treść + budowa + archaizmy'." }
-    ];
-
-    // MAKSYMALNA PULA PYTAŃ OTWARTYCH (15 pytań)
-    const openPool = [
-        { q: "Wypisz z notatek dwa główne zagadnienia związane z 'Iliadą' (dział Antyk).", key: "1) Dlaczego doszło do wojny, 2) pojedynek Achillesa." },
-        { q: "Wymień przynajmniej dwa tytuły satyr i dwie bajki Ignacego Krasickiego z Twoich notatek.", key: "Satyry: 'Do króla', 'Świat zepsuty', 'Żona modna'. Bajki: 'Ptaszki w klatce', 'Przyjaciele'." },
-        { q: "Jakie mity antyczne musisz znać na maturę (wymień przynajmniej trzy zapisane w notatkach)?", key: "Niobe, Prometeusz, Syzyf, Orfeusz i Eurydyka, Legendy Tebańskie, Historia Wojny Trojańskiej." },
-        { q: "Jakie treny Jana Kochanowskiego zostały wymienione w notatkach do epoki Renesansu?", key: "Treny IX, X, XI." },
-        { q: "Jakie trzy zagadnienia przypisałeś w notatkach do 'Bogurodzicy'?", key: "1) Treść, 2) budowa, 3) archaizmy." },
-        { q: "Jakie utwory polskiego Baroku i ich autorów zanotowałeś? Podaj przynajmniej dwóch.", key: "Daniel Naborowski - 'Krótkość żywota', Jan Andrzej Morsztyn - 'Do trupa', Mikołaj Sęp-Szarzyński - 'O wojnie naszej...'." },
-        { q: "Jakie pojęcie przypisałeś do 'Hymnu do miłości ojczyzny' I. Krasickiego?", key: "Poezja tyrtejska." },
-        { q: "Od czego zaczynają się wymagania do matury w dziale Antyk (zapisane nad mitami)?", key: "Od definicji mitu." },
-        { q: "Jakie dwa pojęcia zostały dopisane do 'Pieśni o Rolandzie' w Średniowieczu?", key: "Ars bene moriendi oraz poemat rycerski (chansons de geste)." },
-        { q: "Co zapisałeś na temat 'Antygony'?", key: "Hybris i konflikt tragiczny." },
-        { q: "Podaj przynajmniej dwa motywy biblijne wypisane w Twoich notatkach.", key: "Motyw vanitas, motyw cierpienia niezawinionego, Apokalipsa (katastrofizm)." },
-        { q: "Z jakimi pojęciami (motywami) została powiązana 'Rozmowa Mistrza Polikarpa ze Śmiercią'?", key: "Dance macabre + śmierć." },
-        { q: "Jakie charakterystyczne zjawisko zostało przypisane do 'Lamentu świętokrzyskiego'?", key: "Deskralizacja Maryi." },
-        { q: "Czego, według Twojego dopisku przy dramacie szekspirowskim, nie ma w 'Makbecie'?", key: "Nie ma fatum." },
-        { q: "Podaj tytuły dramatów, które wymieniłeś na liście na samym dole strony z Oświeceniem (pod Skąpcem).", key: "Hamlet, Boska komedia." }
-    ];
+    // BAZY DANYCH DLA RÓŻNYCH SPRAWDZIANÓW
+    const quizzesData = {
+        "Zagadnienia maturalne z notatek": {
+            closed: [
+                { q: "Z jakimi pojęciami, według starych notatek, wiąże się omówienie 'Antygony'?", options: {A: "Ars bene moriendi", B: "Motyw vanitas", C: "Hybris i konflikt tragiczny", D: "Komizm"}, correct: "C", feedback: "Zgadza się! Hybris i konflikt tragiczny to główne zagadnienia z Antygony." },
+                { q: "Jakie elementy przypisałeś w notatkach do 'Pieśni o Rolandzie'?", options: {A: "Deskralizacja Maryi", B: "Ars bene moriendi oraz poemat rycerski", C: "Dance macabre", D: "Archaizmy"}, correct: "B", feedback: "Świetnie! 'Ars bene moriendi' i chansons de geste pasują do Rolanda." },
+                { q: "Co charakteryzuje 'Makbeta' na tle dramatów z antyku?", options: {A: "Fatum", B: "Brak fatum w losach bohatera", C: "Motyw vanitas", D: "Sielanka"}, correct: "B", feedback: "Dobrze! W notatkach zapisałeś 'nie ma fatum'." },
+                { q: "Jaki motyw jest przypisany do 'Rozmowy Mistrza Polikarpa ze Śmiercią'?", options: {A: "Dance macabre", B: "Poemat rycerski", C: "Komedia charakterów", D: "Poezja tyrtejska"}, correct: "A", feedback: "Poprawnie. Dance macabre to motyw z tego utworu." },
+                { q: "Które zjawisko przypisałeś w notatkach do 'Lamentu świętokrzyskiego'?", options: {A: "Budowa i archaizmy", B: "Konflikt tragiczny", C: "Deskralizacja Maryi", D: "Motyw cierpienia niezawinionego"}, correct: "C", feedback: "Brawo. Deskralizacja Maryi to klucz do Lamentu." },
+                { q: "Jakie cechy przypisałeś komedii 'Skąpiec'?", options: {A: "Katastrofizm", B: "Komizm + komedia charakterów", C: "Motyw vanitas", D: "Hybris"}, correct: "B", feedback: "Dokładnie tak, 'Skąpiec' to komedia charakterów." },
+                { q: "Z czym według notatek wiąże się Apokalipsa w Biblii?", options: {A: "Katastrofizm", B: "Sielanka", C: "Ars bene moriendi", D: "Komizm"}, correct: "A", feedback: "Dobrze! Apokalipsa powiązana z katastrofizmem." },
+                { q: "Jaki inny motyw biblijny znajduje się w notatkach?", options: {A: "Motyw vanitas i cierpienie niezawinione", B: "Dance macabre", C: "Hybris", D: "Poezja tyrtejska"}, correct: "A", feedback: "Zgadza się. Zapisano motyw vanitas oraz cierpienia niezawinionego." },
+                { q: "Do kogo skierowane są pieśni Horacego wymienione w notatkach?", options: {A: "Do Mecenasa", B: "Do króla", C: "Do trupa", D: "Do ojczyzny"}, correct: "A", feedback: "Świetnie! Zanotowałeś m.in. pieśń 'Do Mecenasa'." },
+                { q: "Z jakim pojęciem z notatek wiąże się Platon?", options: {A: "Jaskinia platońska", B: "Hybris", C: "Fatum", D: "Konflikt tragiczny"}, correct: "A", feedback: "Poprawna odpowiedź: Jaskinia platońska." },
+                { q: "Jakie dramaty, oprócz Skąpca, wypisałeś w dziale Oświecenie?", options: {A: "Tango i Wesele", B: "Hamlet i Boska komedia", C: "Makbet i Antygona", D: "Lalka i Dziady"}, correct: "B", feedback: "Zgadza się. Zapisano tam Hamleta i Boską komedię." },
+                { q: "Który z twórców barokowych napisał 'Krótkość żywota'?", options: {A: "Jan Andrzej Morsztyn", B: "Daniel Naborowski", C: "Mikołaj Sęp-Szarzyński", D: "Ignacy Krasicki"}, correct: "B", feedback: "Dokładnie, autorem jest Naborowski." },
+                { q: "Kto jest autorem utworu 'Do trupa' wymienionego na liście Baroku?", options: {A: "Daniel Naborowski", B: "Mikołaj Sęp-Szarzyński", C: "Jan Andrzej Morsztyn", D: "Jan Kochanowski"}, correct: "C", feedback: "Świetnie, Jan Andrzej Morsztyn to autor 'Do trupa'." },
+                { q: "Z twórczością jakiego autora barokowego wiąże się utwór 'O wojnie naszej...'?", options: {A: "Mikołaj Sęp-Szarzyński", B: "Daniel Naborowski", C: "Jan Kochanowski", D: "Horacy"}, correct: "A", feedback: "Poprawnie, zapisałeś Mikołaja Sęp-Szarzyńskiego." },
+                { q: "Jakie gatunki twórczości wymieniono w notatkach przy Ignacym Krasickim?", options: {A: "Treny i pieśni", B: "Satyry i bajki", C: "Komedie i dramaty", D: "Eposy i mity"}, correct: "B", feedback: "Dobrze! Wypisałeś jego satyry i bajki." },
+                { q: "Jaki rodzaj poezji został przypisany do utworu 'Hymn do miłości ojczyzny'?", options: {A: "Poezja śpiewana", B: "Poezja religijna", C: "Poezja tyrtejska", D: "Poezja żałobna"}, correct: "C", feedback: "Zgadza się! W notatkach widnieje 'poezja tyrtejska'." },
+                { q: "Co jest pierwszym punktem wymagań do matury w notatkach o Antyku?", options: {A: "Jaskinia platońska", B: "Historia Wojny Trojańskiej", C: "Definicja mitu", D: "Hybris"}, correct: "C", feedback: "Zgadza się, pierwszy punkt to 'definicja mitu'." },
+                { q: "Co z poniższych zalicza się do mitów przypisanych w notatkach do powtórki?", options: {A: "Legendy Tebańskie", B: "Rozmowa Mistrza Polikarpa", C: "Pieśń o Rolandzie", D: "Do trupa"}, correct: "A", feedback: "Dobrze, wymieniłeś Legendy Tebańskie." },
+                { q: "Które zagadnienie dopisałeś bezpośrednio do 'Iliady'?", options: {A: "Motyw vanitas", B: "Konflikt tragiczny", C: "Pojedynek Achillesa", D: "Katastrofizm"}, correct: "C", feedback: "Tak, zapisałeś 'Pojedynek Achillesa' w kontekście Iliady." },
+                { q: "Które treny Jana Kochanowskiego zostały wyraźnie wypisane cyframi rzymskimi?", options: {A: "V, VI, VII, VIII", B: "IX, X, XI", C: "I, II, III", D: "XIX"}, correct: "B", feedback: "Zgadza się, zanotowano Treny IX, X, XI." },
+                { q: "Jakie trzy zagadnienia wymieniono do utworu 'Bogurodzica'?", options: {A: "Treść, budowa, archaizmy", B: "Komizm, fatum, hybris", C: "Taniec, śmierć, katastrofizm", D: "Motyw vanitas, cierpienie, apokalipsa"}, correct: "A", feedback: "Dobrze! Zapisałeś 'treść + budowa + archaizmy'." }
+            ],
+            open: [
+                { q: "Wypisz z notatek dwa główne zagadnienia związane z 'Iliadą' (dział Antyk).", key: "1) Dlaczego doszło do wojny, 2) pojedynek Achillesa." },
+                { q: "Wymień przynajmniej dwa tytuły satyr i dwie bajki Ignacego Krasickiego z Twoich notatek.", key: "Satyry: 'Do króla', 'Świat zepsuty', 'Żona modna'. Bajki: 'Ptaszki w klatce', 'Przyjaciele'." },
+                { q: "Jakie mity antyczne musisz znać na maturę (wymień przynajmniej trzy zapisane w notatkach)?", key: "Niobe, Prometeusz, Syzyf, Orfeusz i Eurydyka, Legendy Tebańskie, Historia Wojny Trojańskiej." },
+                { q: "Jakie treny Jana Kochanowskiego zostały wymienione w notatkach do epoki Renesansu?", key: "Treny IX, X, XI." },
+                { q: "Jakie trzy zagadnienia przypisałeś w notatkach do 'Bogurodzicy'?", key: "1) Treść, 2) budowa, 3) archaizmy." },
+                { q: "Jakie utwory polskiego Baroku i ich autorów zanotowałeś? Podaj przynajmniej dwóch.", key: "Daniel Naborowski - 'Krótkość żywota', Jan Andrzej Morsztyn - 'Do trupa', Mikołaj Sęp-Szarzyński - 'O wojnie naszej...'." },
+                { q: "Jakie pojęcie przypisałeś do 'Hymnu do miłości ojczyzny' I. Krasickiego?", key: "Poezja tyrtejska." },
+                { q: "Od czego zaczynają się wymagania do matury w dziale Antyk (zapisane nad mitami)?", key: "Od definicji mitu." },
+                { q: "Jakie dwa pojęcia zostały dopisane do 'Pieśni o Rolandzie' w Średniowieczu?", key: "Ars bene moriendi oraz poemat rycerski (chansons de geste)." },
+                { q: "Co zapisałeś na temat 'Antygony'?", key: "Hybris i konflikt tragiczny." },
+                { q: "Podaj przynajmniej dwa motywy biblijne wypisane w Twoich notatkach.", key: "Motyw vanitas, motyw cierpienia niezawinionego, Apokalipsa (katastrofizm)." },
+                { q: "Z jakimi pojęciami (motywami) została powiązana 'Rozmowa Mistrza Polikarpa ze Śmiercią'?", key: "Dance macabre + śmierć." },
+                { q: "Jakie charakterystyczne zjawisko zostało przypisane do 'Lamentu świętokrzyskiego'?", key: "Deskralizacja Matki Boskiej." },
+                { q: "Czego, według Twojego dopisku przy dramacie szekspirowskim, nie ma w 'Makbecie'?", key: "Nie ma fatum." },
+                { q: "Podaj tytuły dramatów, które wymieniłeś na liście na samym dole strony z Oświeceniem (pod Skąpcem).", key: "Hamlet, Boska komedia." }
+            ]
+        },
+        "Sprawdzian z antyku poprawa": {
+            closed: [
+                { q: "Jakie symbole biblijne przypisano do Apokalipsy św. Jana w tabeli?", options: {A: "Smok, Nowe Jeruzalem i jeźdźcy apokalipsy", B: "Złote cielce i Arka", C: "Krzew gorejący", D: "Drzewo poznania dobra i zła"}, correct: "A", feedback: "Dokładnie! Wybrane symbole to jeźdźcy apokalipsy, smok, Nowe Jeruzalem." },
+                { q: "Jakie łacińskie pojęcie (motyw) powiązano z twórczością Horacego (np. przy 'Exegi monumentum')?", options: {A: "Ars bene moriendi", B: "Non omnis moriar", C: "Danse macabre", D: "Vanitas"}, correct: "B", feedback: "Zgadza się. 'Non omnis moriar' odnosi się do nieśmiertelności artysty." },
+                { q: "Jaki specyficzny motyw literacki wymieniono w tabeli przy 'Bogurodzicy'?", options: {A: "Motyw deesis i idea pośrednictwa", B: "Motyw władzy i femme fatale", C: "Motyw marności", D: "Desakralizacja"}, correct: "A", feedback: "Poprawnie. W tabeli widnieje motyw deesis oraz idea pośrednictwa." },
+                { q: "Jakie zjawisko literackie (obok vanitas) przypisano do wierszy epoki baroku (Naborowski, Morsztyn)?", options: {A: "Konceptualizm", B: "Horacjanizm", C: "Groteskowość", D: "Klasycyzm"}, correct: "A", feedback: "Dobrze! Barok to m.in. konceptualizm." },
+                { q: "Którą zasadę oświeceniową realizują satyry Ignacego Krasickiego według tabeli?", options: {A: "Sztuka dla sztuki", B: "Zasada 'bawiąc uczyć'", C: "Non omnis moriar", D: "Carpe diem"}, correct: "B", feedback: "Zgadza się. Główną zasadą wymienioną przy satyryku jest 'bawiąc uczyć'." },
+                { q: "Co jest charakterystyczną cechą eposu homeryckiego (np. 'Iliady') wskazaną w tabeli?", options: {A: "Ironia tragiczna", B: "Epitet stały", C: "Trzy rodzaje komizmu", D: "Archaizmy"}, correct: "B", feedback: "Świetnie! 'Epitet stały' został wypisany przy eposie homeryckim." },
+                { q: "Jaki motyw (oprócz braku fatum i motywu władzy) przypisano do 'Makbeta' Szekspira?", options: {A: "Hybris", B: "Femme fatale", C: "Etos rycerza", D: "Deesis"}, correct: "B", feedback: "Brawo. W tabeli znajduje się określenie femme fatale." },
+                { q: "Jaką cechę przypisano do 'Rozmowy Mistrza Polikarpa ze Śmiercią' oprócz motywu danse macabre?", options: {A: "Groteskowość", B: "Konceptualizm", C: "Ironia tragiczna", D: "Horacjanizm"}, correct: "A", feedback: "Dobrze! Wymieniono alegoryczny obraz śmierci i groteskowość." },
+                { q: "Co jest głównym tematem Księgi Koheleta według rozpiski?", options: {A: "Cierpienie niezawinione", B: "Stworzenie świata", C: "Motyw marności (vanitas)", D: "Wizja katastroficzna"}, correct: "C", feedback: "Zgadza się, Księga Koheleta łączy się z motywem marności." },
+                { q: "Jakie pojęcie przypisano w tabeli do 'Antygony' (oprócz m.in. fatum i hybris)?", options: {A: "Ironia tragiczna", B: "Konceptualizm", C: "Epitet stały", D: "Desakralizacja"}, correct: "A", feedback: "Poprawnie. Dodano m.in. tragizm i ironię tragiczną." },
+                { q: "Z jakimi zagadnieniami łączy się 'Księga Rodzaju' w tabeli?", options: {A: "Stworzenie świata i relacje Bóg-człowiek", B: "Zasada 'bawiąc uczyć'", C: "Wizja katastroficzna", D: "Cierpienie niezawinione"}, correct: "A", feedback: "Dokładnie. Stworzenie świata to główny temat Księgi Rodzaju." },
+                { q: "Czego dotyczy zagadnienie z 'Księgi Psalmów' według nowej tabeli?", options: {A: "Podział psalmów i relacje Bóg-człowiek", B: "Symbole apokaliptyczne", C: "Ars bene moriendi", D: "Horacjanizm"}, correct: "A", feedback: "Zgadza się. Przy Psalmach wymieniono ich podział." },
+                { q: "Jakie dwa konkretne utwory Horacego zostały podane jako przykłady lektur?", options: {A: "Exegi monumentum i Do Leukonoe", B: "Krótkość żywota i Do trupa", C: "Świat zepsuty i Żona modna", D: "Pieśń IX i Pieśń V"}, correct: "A", feedback: "Świetnie! 'Exegi monumentum' i 'Do Leukonoe' to wypisane dzieła Horacego." },
+                { q: "Z twórczością jakiego antycznego twórcy powiązano 'Pieśni' Kochanowskiego w tabeli?", options: {A: "Z Horacym", B: "Z Homerem", C: "Z Sofoklesem", D: "Z Parandowskim"}, correct: "A", feedback: "Poprawnie. Wymieniono bezpośredni związek z Horacym." },
+                { q: "Z jakimi dwiema wartościami wiąże się 'kryzys światopoglądowy' w Trenach IX, X, XI?", options: {A: "Z mądrością i cnotą", B: "Z władzą i fatum", C: "Z marnością i cierpieniem", D: "Z komizmem i groteskowością"}, correct: "A", feedback: "Zgadza się! Zanotowano kryzys związany z cnotą i mądrością." },
+                { q: "Czego, według tabeli, brakuje w 'Makbecie' (co odróżnia go od antyku)?", options: {A: "Fatum", B: "Władzy", C: "Konfliktu tragicznego", D: "Archaizmów"}, correct: "A", feedback: "Dokładnie, Szekspir zrywa z antycznym fatum." },
+                { q: "Jakie dwa tytuły satyr Krasickiego podano jako przykłady w tabeli?", options: {A: "Świat zepsuty i Żona modna", B: "Hymn do miłości ojczyzny i Exegi monumentum", C: "Krótkość żywota i Do trupa", D: "Skąpiec i Antygona"}, correct: "A", feedback: "Zgadza się, zapisano 'Świat zepsuty' i 'Żona modna'." },
+                { q: "W jakim kontekście pojawiają się informacje biograficzne przy Ignacym Krasickim?", options: {A: "Krasicki jako autorytet", B: "Krasicki jako femme fatale", C: "Krasicki jako twórca danse macabre", D: "Krasicki a horacjanizm"}, correct: "A", feedback: "Dobrze, tabela wymaga wiedzy o Krasickim jako autorytecie." },
+                { q: "Jakie rodzaje komizmu wymienia tabela przy 'Skąpcu' Moliera?", options: {A: "Trzy rodzaje komizmu", B: "Tylko komizm postaci", C: "Dwa rodzaje komizmu", D: "Komizm słowny i sytuacyjny"}, correct: "A", feedback: "Zgadza się. W tabeli jest wpisane wprost: 'trzy rodzaje komizmu'." },
+                { q: "Jakie pojęcie połączono z etosem rycerza w 'Pieśni o Rolandzie'?", options: {A: "Ars bene moriendi", B: "Danse macabre", C: "Non omnis moriar", D: "Deesis"}, correct: "A", feedback: "Poprawnie. Etos rycerza wiąże się tam ze sztuką dobrego umierania." },
+                { q: "Oprócz 'non omnis moriar', z jakim terminem dotyczącym budowy powiązano Horacego?", options: {A: "Horacjanizm i budowa pieśni", B: "Konceptualizm", C: "Komedia molierowska", D: "Poezja tyrtejska"}, correct: "A", feedback: "Zgadza się! Dodano również horacjanizm." }
+            ],
+            open: [
+                { q: "Wymień trzy kryzysy, które według tabeli odzwierciedlają Treny (IX, X, XI) Jana Kochanowskiego.", key: "1) Kryzys światopoglądowy (mądrość), 2) Kryzys religijny, 3) Kryzys światopoglądowy (cnota)." },
+                { q: "Jakie zagadnienia przypisano w tabeli do 'Lamentu świętokrzyskiego'?", key: "Desakralizacja Matki Boskiej, apostrofy, relacja Matki Boskiej i Jezusa." },
+                { q: "Wymień co najmniej trzy mity z 'Mitologii' Parandowskiego obowiązujące do matury według nowej tabeli.", key: "Do wyboru: o Syzyfie, o Prometeuszu, o Orfeuszu i Eurydyce, o Narcyzie, o rodzie Labdakidów, o wojnie trojańskiej." },
+                { q: "Jakie zagadnienia łączą się w tabeli z Księgą Hioba?", key: "Historia Hioba, cierpienie niezawinione." },
+                { q: "Jakie zagadnienia przypisano do 'Hymnu do miłości ojczyzny' I. Krasickiego?", key: "Poezja tyrtejska, okoliczności powstania utworu, środki stylistyczne i interpretacja." },
+                { q: "Jakie pojęcia z teorii dramatu antycznego przypisano do 'Antygony'? (Wymień minimum trzy).", key: "Dramat antyczny, konflikt tragiczny, tragizm, ironia tragiczna, hybris." },
+                { q: "Jakie dokładnie zdarzenie (epizod) z 'Iliady' jest wpisane do tabeli jako zagadnienie?", key: "Pojedynek Hektora i Achillesa." },
+                { q: "Jakie cechy formy i budowy przypisano w tabeli do 'Bogurodzicy'?", key: "Archaizmy, cechy pieśni i modlitwy, budowa utworu." },
+                { q: "Podaj trzy cechy przypisane w tabeli do 'Rozmowy Mistrza Polikarpa ze Śmiercią'.", key: "Alegoryczny obraz śmierci, groteskowość, danse macabre." },
+                { q: "Jakie dwa główne zagadnienia obowiązują Cię z 'Pieśni o Rolandzie'?", key: "Etos rycerza, ars bene moriendi." },
+                { q: "Wymień dwóch autorów i tytuły ich wierszy przypisanych do epoki baroku w nowej tabeli.", key: "Daniel Naborowski 'Krótkość żywota', Jan Andrzej Morsztyn 'Do trupa'." },
+                { q: "Wymień trzy główne pojęcia tematyczne przypisane w tabeli do 'Makbeta'.", key: "Motyw władzy, femme fatale, brak fatum." },
+                { q: "Jakiego terminu używa tabela do określenia gatunku literackiego 'Skąpca'?", key: "Komedia molierowska." },
+                { q: "Oprócz 'poezji tyrtejskiej', jakie dwa inne zagadnienia zapisano przy Hymnie do miłości ojczyzny?", key: "Okoliczności powstania utworu oraz środki stylistyczne i interpretacja." },
+                { q: "Wymień wszystkie pięć ksiąg lub fragmentów biblijnych wypisanych z nazwy w lekturach obowiązkowych w tabeli.", key: "Księga Rodzaju, Księga Hioba, Księga Koheleta, Księga Psalmów, Apokalipsa św. Jana." }
+            ]
+        }
+    };
 
     let currentClosed = [];
     let currentOpen = [];
+    let activeTopic = "";
 
-    const topicsData = { "Język Polski": ["Zagadnienia maturalne z notatek (MAX)"] };
+    const topicsList = { 
+        "Język Polski": [
+            "Zagadnienia maturalne z notatek (Stara baza)",
+            "Sprawdzian z antyku poprawa"
+        ] 
+    };
 
     const subjectSelect = document.getElementById("subject");
     const topicSelect = document.getElementById("topic");
     const generateBtn = document.getElementById("generate-btn");
     const poolInfo = document.getElementById("pool-info");
     const testArea = document.getElementById("test-area");
+    const testTitle = document.getElementById("test-title");
     const questionsContainer = document.getElementById("questions-container");
     const resultBox = document.getElementById("result-box");
     const checkBtn = document.getElementById("check-btn");
 
-    // Inicjalizacja informacji o puli
-    poolInfo.textContent = `Pula bazy danych: ${closedPool.length} pytań zamkniętych, ${openPool.length} pytań otwartych.`;
-
     subjectSelect.addEventListener("change", function() {
         const selectedSubject = this.value;
-        topicSelect.innerHTML = '<option value="" disabled selected>-- Wybierz temat --</option>';
+        topicSelect.innerHTML = '<option value="" disabled selected>-- Wybierz temat sprawdzianu --</option>';
         topicSelect.disabled = false;
-        topicsData[selectedSubject].forEach(topic => {
+        topicsList[selectedSubject].forEach(topic => {
             topicSelect.innerHTML += `<option value="${topic}">${topic}</option>`;
         });
         testArea.style.display = "none";
         resultBox.style.display = "none";
+        poolInfo.style.display = "none";
     });
 
+    topicSelect.addEventListener("change", function() {
+        activeTopic = this.value;
+        const currentData = quizzesData[activeTopic];
+        poolInfo.style.display = "block";
+        poolInfo.textContent = `Wybrano bazę: ${activeTopic}. Pula wynosi: ${currentData.closed.length} pytań zamkniętych, ${currentData.open.length} pytań otwartych.`;
+    });
+
+    // Pętla losująca (mieszająca tablicę)
     function shuffleArray(array) {
         let arr = [...array];
         for (let i = arr.length - 1; i > 0; i--) {
@@ -235,7 +292,9 @@
     }
 
     generateBtn.addEventListener("click", function() {
-        if (!topicSelect.value) { alert("Wybierz temat!"); return; }
+        if (!topicSelect.value) { alert("Wybierz temat sprawdzianu z listy!"); return; }
+
+        const currentData = quizzesData[activeTopic];
 
         checkBtn.textContent = "Oddaj sprawdzian do oceny";
         checkBtn.disabled = false;
@@ -243,10 +302,11 @@
         resultBox.style.display = "none";
         questionsContainer.innerHTML = "";
         testArea.style.display = "block";
+        testTitle.textContent = `Test: ${activeTopic}`;
 
-        // Losowanie: 3 zamknięte, 2 otwarte na test
-        currentClosed = shuffleArray(closedPool).slice(0, 3);
-        currentOpen = shuffleArray(openPool).slice(0, 2);
+        // Wyciąganie LOSOWYCH pytań z maksymalnej puli danej kategorii
+        currentClosed = shuffleArray(currentData.closed).slice(0, 3);
+        currentOpen = shuffleArray(currentData.open).slice(0, 2);
 
         let questionNumber = 1;
 
@@ -316,8 +376,8 @@
         resultBox.style.display = "block";
         scoreDisplay.textContent = `Punkty (zamknięte): ${score}/3`;
         comment.innerHTML = `
-            <p><strong>Szacunkowa ocena: ${finalGrade}</strong></p>
-            <p>Pytania otwarte musisz ocenić sam na podstawie zielonego klucza. Jeśli chcesz poćwiczyć więcej zagadnień z notatek, kliknij <em>"Losuj Nowy Sprawdzian"</em> u góry – system wylosuje kolejne 5 pytań z dostępnej bazy 36 zagadnień!</p>
+            <p><strong>Szacunkowa ocena z części zamkniętej: ${finalGrade}</strong></p>
+            <p>Pytania otwarte zweryfikuj samodzielnie na podstawie klucza (zielone pole pod Twoją odpowiedzią). Jeśli chcesz podejść do kolejnej próby losowania, kliknij <em>"Losuj Nowy Sprawdzian"</em> na górze strony!</p>
         `;
         
         checkBtn.textContent = "Test sprawdzony";
